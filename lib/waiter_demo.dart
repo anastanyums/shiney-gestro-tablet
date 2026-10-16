@@ -2599,11 +2599,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
             Row(children: [
               label(t.id),
               const SizedBox(width: 12),
-              Expanded(
-                  child: Text(
-                      '${t.guests} guests · ${t.units} ordered\n${money(t.balance)} remaining')),
-              Text(elapsed(t),
-                  style: const TextStyle(color: green, fontSize: 12))
+              // Only table number and guests here; amounts follow on the next step.
+              Expanded(child: Text('${t.guests} guests')),
             ]),
             selected: chosenTables.contains(t),
             onTap: () => setState(() {
