@@ -1,0 +1,55 @@
+name: Web preview (staging)
+
+# Builds the tablet app for the web and publishes it on GitHub Pages:
+# https://anastanyums.github.io/shiney-gestro-tablet/
+# Uses the STAGING database (APP_ENV is not set), so it never touches live restaurants.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.32.0'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build web app (staging)
+        run: flutter build web --release --base-href /shiney-gestro-tablet/
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
