@@ -1174,12 +1174,15 @@ class _WaiterDemoState extends State<WaiterDemo> {
               const SizedBox(height: 5),
               Row(children: [Icon(t.active ? Icons.schedule : reserved ? Icons.event_outlined : Icons.add_circle_outline, size: 15, color: const Color(0xFF74867D)), const SizedBox(width: 5), Expanded(child: Text(t.active ? elapsed : reserved ? (t.reservedAt == null ? 'Reserved' : hhmm(t.reservedAt!)) : 'Seat guests', style: const TextStyle(fontSize: 13, color: Color(0xFF60766D))))]),
             ])),
-            const SizedBox(width: 8),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text(t.active ? 'Balance due' : reserved ? 'Reserved' : 'Start session', style: const TextStyle(fontSize: 11, color: Color(0xFF60766D))),
-              const SizedBox(height: 3),
-              Text(t.active ? money(t.balance) : reserved ? (t.reservedName.isEmpty ? 'Held' : t.reservedName) : 'Seat →', textAlign: TextAlign.right, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF123B30))),
-            ])),
+            // Active tables show only table number, guests and time; the amount is in the table detail.
+            if (!t.active) ...[
+              const SizedBox(width: 8),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Text(reserved ? 'Reserved' : 'Start session', style: const TextStyle(fontSize: 11, color: Color(0xFF60766D))),
+                const SizedBox(height: 3),
+                Text(reserved ? (t.reservedName.isEmpty ? 'Held' : t.reservedName) : 'Seat →', textAlign: TextAlign.right, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF123B30))),
+              ])),
+            ],
             const SizedBox(width: 6), const Icon(Icons.chevron_right, size: 18, color: Color(0xFF71877C)),
           ]),
           if (attention) Padding(padding: const EdgeInsets.only(left: 64, top: 10), child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(color: const Color(0xFFFFE8AB), borderRadius: BorderRadius.circular(20)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.room_service_outlined, size: 16, color: amber), const SizedBox(width: 6), Flexible(child: Text('$readyN ready to serve', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: amber)))]))),
