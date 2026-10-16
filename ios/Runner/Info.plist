@@ -47,5 +47,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Scan device pairing and voucher QR codes inside Shiney Gestro.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a voucher QR image to read its code.</string>
 </dict>
 </plist>

@@ -1,8 +1,8 @@
 name: foodtro_staff
-description: A new Flutter project.
+description: Shiney Gestro restaurant tablet app (service, kitchen and bar).
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 2.0.0+30 # versionCode must stay above Shiney POS 1.0.27 (28)
 
 environment:
   sdk: ^3.0.0
@@ -10,6 +10,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  supabase_flutter: ^2.8.0
+  mobile_scanner: ^6.0.2
+  image_picker: 1.1.2
+  print_bluetooth_thermal: ^1.1.6
+  shared_preferences: ^2.3.2
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
