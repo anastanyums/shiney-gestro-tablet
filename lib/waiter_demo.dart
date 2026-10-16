@@ -2353,115 +2353,301 @@ class _WaiterDemoState extends State<WaiterDemo> {
             }
           }
         });
+    // Compact card: size/variant list with prices, note, allergy alert, quantity + Add.
+    const line = Color(0xFFE2E5E9), muted = Color(0xFF4B5560);
+    const alertRed = Color(0xFFB42318), alertInk = Color(0xFF8E1B12);
+    Widget groupLabel(String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
+        child: Text(text.toUpperCase(),
+            style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: .7,
+                color: muted)));
+    void add(BuildContext context, StateSetter update) {
+      final missing = [
+        for (final g in d.variations)
+          if (g.required && picked[g]!.isEmpty) g.name
+      ];
+      if (missing.isNotEmpty) {
+        update(() => problem = 'Choose ${missing.join(' and ')}.');
+        return;
+      }
+      final choices = <Map<String, dynamic>>[
+        for (final g in d.variations)
+          for (final o in g.options)
+            if (picked[g]!.contains(o))
+              {'group': g.name, 'option': o.name, 'price_delta_cents': o.delta}
+      ];
+      final summary = [for (final c in choices) '${c['option']}'].join(' · ');
+      setState(() => cart.add(OrderLine(d, qty,
+          size: summary,
+          spice: '',
+          note: note,
+          allergy: allergy,
+          unitPrice: unit(),
+          choices: choices)));
+      Navigator.pop(context);
+      message('Added to ${orderingTable!.id} cart');
+    }
+
     await showDialog<void>(
         context: context,
         builder: (context) => StatefulBuilder(
-            builder: (context, update) => AlertDialog(
-                  title: Text(d.name),
-                  content: SizedBox(
-                      width: 440,
-                      child: SingleChildScrollView(
-                          child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+            builder: (context, update) => Dialog(
+                backgroundColor: paper,
+                surfaceTintColor: Colors.transparent,
+                insetPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24)),
+                clipBehavior: Clip.antiAlias,
+                child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 440),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      // Header: dish name and category
+                      Container(
+                          padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+                          decoration: const BoxDecoration(
+                              border:
+                                  Border(bottom: BorderSide(color: surface2))),
+                          child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.baseline,
+                              textBaseline: TextBaseline.alphabetic,
                               children: [
-                            Center(
-                                child: Text(d.emoji,
-                                    style: const TextStyle(fontSize: 54))),
+                                Expanded(
+                                    child: Text(d.name,
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w800,
+                                            color: ink))),
+                                const SizedBox(width: 12),
+                                Text(d.top,
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: muted)),
+                              ])),
+                      Flexible(
+                          child: SingleChildScrollView(
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                            // Variants (e.g. 200 ml / 350 ml / 500 ml) as a list with the price of each
                             for (final g in d.variations) ...[
-                              heading(
+                              groupLabel(
                                   '${g.name}${g.required ? ' *' : ''}${g.multi ? (g.max == null ? ' · choose any' : ' · up to ${g.max}') : ''}'),
-                              Wrap(spacing: 6, runSpacing: 6, children: [
-                                for (final o in g.options)
-                                  ChoiceChip(
-                                      showCheckmark: true,
-                                      checkmarkColor: Colors.white,
-                                      selectedColor: green,
-                                      labelStyle: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: picked[g]!.contains(o)
-                                              ? Colors.white
-                                              : ink),
-                                      label: Text(chipLabel(o)),
-                                      selected: picked[g]!.contains(o),
-                                      onSelected: (_) => choose(g, o, update))
-                              ]),
+                              for (final o in g.options)
+                                Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(20, 0, 20, 6),
+                                    child: Material(
+                                        color: picked[g]!.contains(o)
+                                            ? pale
+                                            : paper,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            side: BorderSide(
+                                                color: picked[g]!.contains(o)
+                                                    ? green
+                                                    : line,
+                                                width: picked[g]!.contains(o)
+                                                    ? 1.5
+                                                    : 1)),
+                                        child: InkWell(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            onTap: () => choose(g, o, update),
+                                            child: SizedBox(
+                                                height: 50,
+                                                child: Row(children: [
+                                                  const SizedBox(width: 12),
+                                                  Icon(
+                                                      g.multi
+                                                          ? (picked[g]!
+                                                                  .contains(o)
+                                                              ? Icons
+                                                                  .check_box_rounded
+                                                              : Icons
+                                                                  .check_box_outline_blank_rounded)
+                                                          : (picked[g]!
+                                                                  .contains(o)
+                                                              ? Icons
+                                                                  .radio_button_checked
+                                                              : Icons
+                                                                  .radio_button_unchecked),
+                                                      size: 22,
+                                                      color:
+                                                          picked[g]!.contains(o)
+                                                              ? green
+                                                              : sub),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(
+                                                      child: Text(o.name,
+                                                          style: TextStyle(
+                                                              fontSize: 15,
+                                                              fontWeight: picked[
+                                                                          g]!
+                                                                      .contains(
+                                                                          o)
+                                                                  ? FontWeight
+                                                                      .w800
+                                                                  : FontWeight
+                                                                      .w700,
+                                                              color: picked[g]!
+                                                                      .contains(
+                                                                          o)
+                                                                  ? const Color(
+                                                                      0xFF1A4F3B)
+                                                                  : ink))),
+                                                  Text(
+                                                      g.multi
+                                                          ? (o.delta == 0
+                                                              ? ''
+                                                              : '${o.delta > 0 ? '+' : '−'}${money(o.delta.abs())}')
+                                                          : money(
+                                                              d.price + o.delta),
+                                                      style: TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                          color: picked[g]!
+                                                                  .contains(o)
+                                                              ? const Color(
+                                                                  0xFF1A4F3B)
+                                                              : muted)),
+                                                  const SizedBox(width: 12),
+                                                ]))))),
                             ],
-                            heading('Notes'),
-                            TextField(
-                                maxLength: 80,
-                                onChanged: (v) => note = v.trim(),
-                                decoration: const InputDecoration(
-                                    hintText:
-                                        'e.g. no onions, sauce on the side',
-                                    isDense: true)),
-                            Row(children: [
-                              Switch(
-                                  value: allergy,
-                                  activeTrackColor: Colors.red,
-                                  onChanged: (v) => update(() => allergy = v)),
-                              const SizedBox(width: 8),
-                              const Flexible(
-                                  child:
-                                      Text('Allergy alert for the kitchen/bar'))
-                            ]),
-                            heading('Quantity'),
-                            stepper(qty, () {
-                              if (qty > 1) update(() => qty--);
-                            }, qty < 99 ? () => update(() => qty++) : null),
-                            const SizedBox(height: 12),
-                            Text('${money(unit() * qty)} before tax',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700)),
+                            // Note for the kitchen / bar
+                            groupLabel('Note'),
+                            Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                child: TextField(
+                                    maxLength: 80,
+                                    minLines: 2,
+                                    maxLines: 2,
+                                    onChanged: (v) => note = v.trim(),
+                                    decoration: InputDecoration(
+                                        hintText: d.drink
+                                            ? 'e.g. no ice, extra lime'
+                                            : 'e.g. no onions, sauce on the side',
+                                        counterText: '',
+                                        isDense: true,
+                                        filled: true,
+                                        fillColor: paper,
+                                        contentPadding:
+                                            const EdgeInsets.all(12),
+                                        enabledBorder: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            borderSide:
+                                                const BorderSide(color: line)),
+                                        focusedBorder: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            borderSide: const BorderSide(
+                                                color: green, width: 1.5))))),
+                            // Allergy alert: shown in red to the kitchen / bar
+                            Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(12, 4, 20, 0),
+                                child: InkWell(
+                                    borderRadius: BorderRadius.circular(10),
+                                    onTap: () =>
+                                        update(() => allergy = !allergy),
+                                    child: SizedBox(
+                                        height: 44,
+                                        child: Row(children: [
+                                          Checkbox(
+                                              value: allergy,
+                                              activeColor: alertRed,
+                                              side: const BorderSide(
+                                                  color: alertRed, width: 1.6),
+                                              onChanged: (v) => update(
+                                                  () => allergy = v ?? false)),
+                                          Text(
+                                              allergy
+                                                  ? 'Allergy alert ON'
+                                                  : 'Mark as allergy alert',
+                                              style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: alertInk)),
+                                        ])))),
                             if (problem != null)
                               Padding(
-                                  padding: const EdgeInsets.only(top: 8),
+                                  padding:
+                                      const EdgeInsets.fromLTRB(20, 6, 20, 0),
                                   child: Text(problem!,
-                                      style: TextStyle(
-                                          color: Colors.red.shade700,
+                                      style: const TextStyle(
+                                          color: alertRed,
                                           fontWeight: FontWeight.w700))),
+                            const SizedBox(height: 8),
                           ]))),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel')),
-                    FilledButton(
-                        onPressed: () {
-                          final missing = [
-                            for (final g in d.variations)
-                              if (g.required && picked[g]!.isEmpty) g.name
-                          ];
-                          if (missing.isNotEmpty) {
-                            update(() =>
-                                problem = 'Choose ${missing.join(' and ')}.');
-                            return;
-                          }
-                          final choices = <Map<String, dynamic>>[
-                            for (final g in d.variations)
-                              for (final o in g.options)
-                                if (picked[g]!.contains(o))
-                                  {
-                                    'group': g.name,
-                                    'option': o.name,
-                                    'price_delta_cents': o.delta
-                                  }
-                          ];
-                          final summary = [
-                            for (final c in choices) '${c['option']}'
-                          ].join(' · ');
-                          setState(() => cart.add(OrderLine(d, qty,
-                              size: summary,
-                              spice: '',
-                              note: note,
-                              allergy: allergy,
-                              unitPrice: unit(),
-                              choices: choices)));
-                          Navigator.pop(context);
-                          message('Added to ${orderingTable!.id} cart');
-                        },
-                        child: const Text('Add to cart')),
-                  ],
-                )));
+                      // Footer: quantity, Cancel, Add · price
+                      Container(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
+                          decoration: const BoxDecoration(
+                              border: Border(top: BorderSide(color: surface2))),
+                          child: Row(children: [
+                            Container(
+                                height: 52,
+                                decoration: BoxDecoration(
+                                    border: Border.all(color: line),
+                                    borderRadius: BorderRadius.circular(14)),
+                                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                  IconButton(
+                                      tooltip: 'Fewer',
+                                      onPressed: qty > 1
+                                          ? () => update(() => qty--)
+                                          : null,
+                                      icon: const Icon(Icons.remove_rounded)),
+                                  SizedBox(
+                                      width: 24,
+                                      child: Text('$qty',
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.w800))),
+                                  IconButton(
+                                      tooltip: 'More',
+                                      color: green,
+                                      onPressed: qty < 99
+                                          ? () => update(() => qty++)
+                                          : null,
+                                      icon: const Icon(Icons.add_rounded)),
+                                ])),
+                            const SizedBox(width: 4),
+                            TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: TextButton.styleFrom(
+                                    foregroundColor: muted,
+                                    minimumSize: const Size(0, 52)),
+                                child: const Text('Cancel',
+                                    style: TextStyle(fontWeight: FontWeight.w700))),
+                            const SizedBox(width: 4),
+                            Expanded(
+                                child: FilledButton(
+                                    onPressed: () => add(context, update),
+                                    style: FilledButton.styleFrom(
+                                        backgroundColor: green,
+                                        minimumSize: const Size.fromHeight(52),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(14))),
+                                    child: FittedBox(
+                                        child: Text(
+                                            'Add · ${money(unit() * qty)}',
+                                            style: const TextStyle(
+                                                fontWeight:
+                                                    FontWeight.w800))))),
+                          ])),
+                    ])))));
   }
 
   Future<void> viewCart() async {
