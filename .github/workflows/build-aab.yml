@@ -1,0 +1,111 @@
+name: Build Signed Shiney POS AAB
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.32.0'
+          cache: true
+
+      - name: Restore signing credentials
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -eu
+
+          test -n "$KEYSTORE_BASE64"
+          test -n "$KEYSTORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
+
+          umask 077
+
+          printf '%s' "$KEYSTORE_BASE64" \
+            | base64 --decode \
+            > android/app/upload-keystore.jks
+
+          {
+            printf 'storeFile=upload-keystore.jks\n'
+            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } > android/key.properties
+
+          echo "Signing credentials restored."
+
+      - name: Verify signing key
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -eu
+
+          keytool -certreq \
+            -alias "$KEY_ALIAS" \
+            -keystore android/app/upload-keystore.jks \
+            -storepass:env KEYSTORE_PASSWORD \
+            -keypass:env KEY_PASSWORD \
+            -file "$RUNNER_TEMP/upload-key-test.csr"
+
+          echo "Signing key password verified."
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build signed release AAB
+        run: flutter build appbundle --release --dart-define APP_ENV=production
+
+      - name: Verify signed AAB
+        run: |
+          set -eu
+
+          AAB="build/app/outputs/bundle/release/app-release.aab"
+
+          test -f "$AAB"
+
+          jarsigner -verify -verbose -certs "$AAB" \
+            > "$RUNNER_TEMP/signature-verification.txt"
+
+          grep -q "jar verified" \
+            "$RUNNER_TEMP/signature-verification.txt"
+
+          echo "AAB signature verified."
+
+      - name: Upload signed AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiney-pos-signed-release-aab
+          path: build/app/outputs/bundle/release/*.aab
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Clean up signing files
+        if: always()
+        run: |
+          rm -f android/key.properties
+          rm -f android/app/upload-keystore.jks
