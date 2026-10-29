@@ -2,7 +2,7 @@ name: foodtro_staff
 description: Shiney Gestro restaurant tablet app (service, kitchen and bar).
 publish_to: 'none'
 
-version: 2.1.0+31 # versionCode must stay above the last Play release (2.0.0 = 30)
+version: 2.1.1+32
 
 environment:
   sdk: ^3.0.0

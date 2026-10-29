@@ -1,4 +1,4 @@
-name: Build Signed Shiney POS AAB
+name: Build Signed Shiney Gestro AAB
 
 on:
   workflow_dispatch:
@@ -99,7 +99,7 @@ jobs:
       - name: Upload signed AAB
         uses: actions/upload-artifact@v4
         with:
-          name: shiney-pos-signed-release-aab
+          name: shiney-gestro-signed-release-aab
           path: build/app/outputs/bundle/release/*.aab
           if-no-files-found: error
           retention-days: 7

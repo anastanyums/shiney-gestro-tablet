@@ -36,7 +36,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web app (staging)
-        run: flutter build web --release --base-href /shiney-gestro-tablet/
+        run: flutter build web --release --dart-define=APP_ENV=staging --base-href /shiney-gestro-tablet/
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
