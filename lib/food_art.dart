@@ -59,7 +59,8 @@ class PosRoot extends StatefulWidget {
 class _PosRootState extends State<PosRoot> {
   late Future<void> loading;
   RealtimeChannel? channel;
-  Timer? debounceMenu, debounceOrders;
+  Timer? debounceMenu, debounceOrders, orderTypePoll;
+  bool orderTypesRefreshing = false;
 
   @override
   void initState() {
@@ -71,12 +72,14 @@ class _PosRootState extends State<PosRoot> {
   void dispose() {
     debounceMenu?.cancel();
     debounceOrders?.cancel();
+    orderTypePoll?.cancel();
     if (channel != null) supa.removeChannel(channel!);
     super.dispose();
   }
 
   Future<void> load() async {
     final rid = widget.restaurantId;
+    pos.resetOrderChannels(rid);
     final r = await supa
         .from('restaurants')
         .select(
@@ -96,6 +99,7 @@ class _PosRootState extends State<PosRoot> {
       r['address'] as String?,
       r['phone'] as String?,
     );
+    await pos.loadOrderChannels(rid);
     pos.deviceName = (device?['name'] as String?) ?? 'POS';
     pos.printer = await PrinterSettings.load();
     invoiceStyle = await InvoiceStyle.load();
@@ -120,7 +124,26 @@ class _PosRootState extends State<PosRoot> {
       );
     }
 
+    Future<void> reloadOrderTypes() async {
+      if (orderTypesRefreshing || !mounted) return;
+      orderTypesRefreshing = true;
+      try {
+        await pos.loadOrderChannels(rid);
+      } catch (e) {
+        debugPrint('Order type settings refresh failed: $e');
+      } finally {
+        orderTypesRefreshing = false;
+      }
+    }
+    orderTypePoll?.cancel();
+    orderTypePoll = Timer.periodic(const Duration(seconds: 30), (_) => reloadOrderTypes());
     var ch = supa.channel('pos-live');
+    ch = ch.onPostgresChanges(
+      event: PostgresChangeEvent.update,
+      schema: 'public', table: 'restaurants',
+      filter: PostgresChangeFilter(type: PostgresChangeFilterType.eq, column: 'id', value: rid),
+      callback: (_) => reloadOrderTypes(),
+    );
     for (final t in [
       'menu_items',
       'menu_categories',
@@ -558,12 +581,21 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
   late final TextEditingController name = TextEditingController(
     text: widget.initialName,
   );
-  late Channel selected = channels.firstWhere(
-    (c) => c.key == widget.initialChannel.key,
-    orElse: () => channels.first,
-  );
+  late Channel? selected = pos.enabledChannels.where((c) => c.key == widget.initialChannel.key).firstOrNull ?? pos.enabledChannels.firstOrNull;
+  @override
+  void initState() {
+    super.initState();
+    pos.addListener(_syncChoices);
+  }
+  void _syncChoices() {
+    if (!mounted) return;
+    final next = pos.enabledChannels.where((c) => c.key == selected?.key).firstOrNull ?? pos.enabledChannels.firstOrNull;
+    if (next != selected) setState(() { selected = next; _nameError = false; });
+    else setState(() {});
+  }
   @override
   void dispose() {
+    pos.removeListener(_syncChoices);
     name.dispose();
     _nameFocus.dispose();
     super.dispose();
@@ -571,14 +603,16 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
 
   final _nameFocus = FocusNode();
   bool _nameError = false;
-  bool get _requiresName => selected.key != 'takeaway';
+  bool get _requiresName => selected?.type == 'delivery';
   void save() {
+    final choice = selected;
+    if (choice == null || !pos.enabledChannels.any((c) => c.key == choice.key)) return;
     if (_requiresName && name.text.trim().isEmpty) {
       setState(() => _nameError = true);
       _nameFocus.requestFocus();
       return;
     }
-    Navigator.pop(context, GuestOrderDetails(selected, name.text.trim()));
+    Navigator.pop(context, GuestOrderDetails(choice, name.text.trim()));
   }
 
   @override
@@ -622,7 +656,7 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
                 spacing: 10,
                 runSpacing: 10,
                 children: [
-                  for (final c in channels)
+                  for (final c in pos.enabledChannels)
                     SizedBox(
                       width: (box.maxWidth - 10) / 2,
                       child: Material(
@@ -630,13 +664,13 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
                             ? const Color(0xFF06C167)
                             : c.key == 'pickme'
                             ? const Color(0xFFFFD43B)
-                            : selected.key == c.key
+                            : selected?.key == c.key
                             ? const Color(0xFFE6F3EC)
                             : const Color(0xFFF7F8F7),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(
-                            color: selected.key == c.key
+                            color: selected?.key == c.key
                                 ? (c.key == 'pickme'
                                       ? const Color(0xFF4A3500)
                                       : const Color(0xFF16452F))
@@ -645,7 +679,7 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
                                       : c.key == 'pickme'
                                       ? const Color(0xFFFFD43B)
                                       : const Color(0xFFE1E7E3)),
-                            width: selected.key == c.key ? 2 : 1,
+                            width: selected?.key == c.key ? 2 : 1,
                           ),
                         ),
                         child: InkWell(
@@ -678,7 +712,7 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
                                     ),
                                   ),
                                 ),
-                                if (selected.key == c.key)
+                                if (selected?.key == c.key)
                                   Icon(
                                     Icons.check_circle,
                                     size: 18,
@@ -695,6 +729,11 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
                 ],
               ),
             ),
+            if (pos.enabledChannels.isEmpty)
+              const Padding(padding: EdgeInsets.only(top: 12), child: Text(
+                'No order types are enabled. Ask the restaurant owner to enable one in Mission Control → Settings → Order types.',
+                style: TextStyle(color: Color(0xFF8A4B00)),
+              )),
             const SizedBox(height: 24),
             TextField(
               controller: name,
@@ -758,7 +797,7 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: save,
+                    onPressed: selected == null ? null : save,
                     icon: const Icon(Icons.check, size: 19),
                     style: FilledButton.styleFrom(
                       minimumSize: const Size(0, 48),
@@ -812,14 +851,50 @@ class _GuestDetailsPreviewState extends State<GuestDetailsPreview> {
   );
 }
 
-Channel channelFor(String? label) => channels.firstWhere(
-  (c) => c.label == label || c.short == label,
-  orElse: () => channels.first,
-);
+Channel channelFor(String? label, {String? type}) {
+  final known = [...pos.configuredChannels, ...channels].where((c) => c.label == label || c.short == label).firstOrNull;
+  if (known != null) return known;
+  // Preserve historical custom labels after the owner renames or disables a type.
+  final name = label?.trim();
+  if (name == null || name.isEmpty) return channels.first;
+  return Channel('historical', name, type == 'takeaway' ? 'takeaway' : 'delivery', name,
+    type == 'takeaway' ? Icons.shopping_bag_outlined : Icons.delivery_dining, forest);
+}
 
 class PosData extends ChangeNotifier {
   Restaurant? restaurant;
   String deviceName = '';
+  String? _channelRestaurant;
+  String _channelFingerprint = '';
+  List<Channel> configuredChannels = List.of(channels);
+  List<Channel> enabledChannels = List.of(channels);
+  void resetOrderChannels(String rid) {
+    _channelRestaurant = rid;
+    _channelFingerprint = '';
+    configuredChannels = List.of(channels);
+    enabledChannels = List.of(channels);
+  }
+  Future<void> loadOrderChannels(String rid) async {
+    final row = await supa.from('restaurants').select('pos_order_channels').eq('id', rid).single();
+    if (_channelRestaurant != rid) return;
+    final raw = row['pos_order_channels'];
+    if (raw is! List) throw const FormatException('Order type settings unavailable');
+    final fingerprint = jsonEncode(raw);
+    if (_channelFingerprint == fingerprint) return;
+    final all = <Channel>[], enabled = <Channel>[];
+    for (final value in raw) {
+      final item = Map<String, dynamic>.from(value as Map);
+      final key = item['key'] as String, label = item['label'] as String, type = item['type'] as String;
+      final standard = channels.where((c) => c.key == key).firstOrNull;
+      final choice = standard ?? Channel(key, label, type, label,
+        type == 'takeaway' ? Icons.shopping_bag_outlined : Icons.delivery_dining, forest);
+      all.add(choice);
+      if (item['enabled'] == true) enabled.add(choice);
+    }
+    configuredChannels = all; enabledChannels = enabled;
+    _channelFingerprint = fingerprint;
+    notifyListeners();
+  }
   List<Product> products = [];
   List<String> categories = [];
   List<Map<String, dynamic>> openOrders = [];
@@ -1285,7 +1360,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final cart = <CartLine>[];
   String? category;
   String query = '';
-  Channel channel = channels.first;
+  Channel channel = pos.enabledChannels.firstOrNull ?? channels.first;
   String customerName = '',
       customerPhone = '',
       externalRef = '',
@@ -1898,16 +1973,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     clearDiscount();
     clearRealVoucher();
     customerName = customerPhone = externalRef = orderNote = '';
-    channel = channels.first;
+    channel = pos.enabledChannels.firstOrNull ?? channels.first;
     showCart = false;
   });
 
   Future<bool> requireGuestName() async {
-    if (channel.key == 'takeaway' || customerName.trim().isNotEmpty)
+    final configured = pos.enabledChannels.where((c) => c.key == channel.key).firstOrNull;
+    if (configured != null) channel = configured;
+    if (!pos.enabledChannels.any((c) => c.key == channel.key)) {
+      message('Choose an enabled order type in Guest & order.');
+      await customerDialog();
+      if (!mounted || !pos.enabledChannels.any((c) => c.key == channel.key)) return false;
+    }
+    if (channel.type == 'takeaway' || customerName.trim().isNotEmpty)
       return true;
     await customerDialog();
     return mounted &&
-        (channel.key == 'takeaway' || customerName.trim().isNotEmpty);
+        (channel.type == 'takeaway' || customerName.trim().isNotEmpty);
   }
 
   Future<void> pay() async {
@@ -3483,7 +3565,7 @@ Future<void> payOrderSheet(BuildContext context, Map<String, dynamic> o) async {
   final method = await choosePayment(
     context,
     subtotal + tax,
-    channelFor(o['channel'] as String?),
+    channelFor(o['channel'] as String?, type: o['order_type'] as String?),
   );
   if (method == null) return;
   final lines = [
@@ -3643,7 +3725,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   Future<void> editDetails(Map<String, dynamic> o) async {
-    final ch = channelFor(o['channel'] as String?);
+    final ch = channelFor(o['channel'] as String?, type: o['order_type'] as String?);
     final name = TextEditingController(
       text: o['customer_name'] as String? ?? '',
     );
@@ -3768,7 +3850,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Future<void> handover(Map<String, dynamic> o) async {
     final id = o['id'] as String;
     if (busy.contains(id)) return;
-    final ch = channelFor(o['channel'] as String?);
+    final ch = channelFor(o['channel'] as String?, type: o['order_type'] as String?);
     final name = (o['customer_name'] as String? ?? '').trim();
     final ref = (o['external_ref'] as String? ?? '').trim();
     if (partner(ch) && ref.isEmpty) {
@@ -4047,7 +4129,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   );
 
   Widget orderCard(BuildContext context, Map<String, dynamic> o) {
-    final ch = channelFor(o['channel'] as String?);
+    final ch = channelFor(o['channel'] as String?, type: o['order_type'] as String?);
     final entries = lines(o),
         isPaid = paid(o),
         isReady = ready(o),
