@@ -16,23 +16,33 @@
   -->
   <base href="$FLUTTER_BASE_HREF">
 
+  <script>
+  // FlutLab serves each preview from its own build directory.
+  if (location.hostname === 'preview.flutlab.io') {
+    document.querySelector('base').setAttribute('href', location.pathname.replace(/[^/]*$/, ''));
+  }
+  </script>
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="Shiney Gestro restaurant management">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="hello_world">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-title" content="Shiney Gestro">
+  <link rel="apple-touch-icon" href="https://gestro.shineygroup.com/assets/shiney-gestro-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/svg+xml" href="https://gestro.shineygroup.com/assets/shiney-gestro-mark.svg?v=20261017-brand"/>
 
-  <title>hello_world</title>
+  <title>Shiney Gestro</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <style>.sg-loader-page{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;z-index:9999}</style>
+  <div id="sg-app-loader" class="sg-loader-page"><shiney-loader size="72" label="Opening your workspace"></shiney-loader></div>
+  <script src="https://gestro.shineygroup.com/shared/shiney-loader.js?v=20261022-loader45"></script>
+  <script>window.addEventListener('flutter-first-frame',function(){document.getElementById('sg-app-loader')?.remove();},{once:true});</script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
