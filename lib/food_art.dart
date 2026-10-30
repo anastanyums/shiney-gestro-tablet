@@ -2983,8 +2983,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           child: FilledButton(
             onPressed: onTap,
             style: FilledButton.styleFrom(
-              backgroundColor: pale,
-              foregroundColor: forest,
+              backgroundColor: color,
+              foregroundColor: Colors.white,
               shape: const StadiumBorder(),
               padding: EdgeInsets.zero,
             ),
