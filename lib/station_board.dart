@@ -240,14 +240,15 @@ class _StationBoardState extends State<StationBoard> {
                                       )
                                     : LayoutBuilder(
                                         builder: (context, constraints) {
-                                          final count = constraints.maxWidth <
-                                                  720
-                                              ? 1
-                                              : ((constraints.maxWidth - 18) /
-                                                      334)
-                                                  .floor()
-                                                  .clamp(2, 5)
-                                                  .toInt();
+                                          // Four tickets across on landscape tablets; narrower views stay readable.
+                                          final width = constraints.maxWidth;
+                                          final count = width >= 1000
+                                              ? 4
+                                              : width >= 840
+                                                  ? 3
+                                                  : width >= 720
+                                                      ? 2
+                                                      : 1;
                                           // Variable-height cards arranged in responsive columns like the reference.
                                           final columns = List.generate(
                                             count,
