@@ -100,7 +100,7 @@ class _StationBoardState extends State<StationBoard> {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'This tablet shows only that station\'s orders. The default ${widget.station == 'Kitchen' ? 'Kitchen' : 'Bar'} shows all ${wsKind == 'food' ? 'food' : 'drinks'}. You can change it any time from the bar at the top.',
+                  'This tablet shows only that station\'s orders. The default ${widget.station == 'Kitchen' ? 'Kitchen' : 'Bar'} shows all ${wsKind == 'food' ? 'food' : 'drinks'}. Station assignments are managed in Mission Control.',
                   style: const TextStyle(color: Color(0xFF8A8FA3)),
                 ),
               ),
@@ -348,24 +348,8 @@ class _StationBoardState extends State<StationBoard> {
     );
   }
 
-  // Which workstation's orders this tablet shows, always visible at the top (only when the
-  // restaurant set up more than one in Mission Control). Tap to switch.
-  // The station tabs scroll away with the orders (they are rarely used), so the whole
-  // screen is free for tickets; scroll up to bring them back.
-  Widget stationShell(Widget body) => NestedScrollView(
-        headerSliverBuilder: (context, _) => [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: walletCard(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                children: [stationBar()],
-              ),
-            ),
-          ),
-        ],
-        body: body,
-      );
+  // Keep the board and session columns unobstructed by a station header.
+  Widget stationShell(Widget body) => body;
 
   void explainSingleStation() => showDialog<void>(
         context: context,
