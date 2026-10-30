@@ -1748,6 +1748,182 @@ class _StationBoardState extends State<StationBoard> {
   }
 
   Widget stationTableCard(DiningTable t, bool kitchen) {
+    const muted = Color(0xFF748179);
+    final total = t.units;
+    int units(String state) => t.items
+        .where((x) => x.status == state)
+        .fold<int>(0, (n, x) => n + x.quantity);
+    final ready = units('Ready');
+    final minutes =
+        DateTime.now().difference(t.started!).inMinutes.clamp(0, 999999);
+    final duration = minutes < 60
+        ? '$minutes min'
+        : '${minutes ~/ 60} h ${minutes % 60} min';
+    final time = t.started!.toLocal();
+    final seatedAt =
+        '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+    final ordered = t.items.fold<int>(0, (n, x) => n + x.totalFor(x.quantity));
+    final open = t.balance;
+    void details() => showDialog<void>(
+        context: context,
+        builder: (ctx) => Dialog(
+              backgroundColor: const Color(0xFFF5F7F6),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24)),
+              child: ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(maxWidth: 640, maxHeight: 760),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
+                        child: Row(children: [
+                          Expanded(
+                              child: Text('${t.id} · Session details',
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700))),
+                          IconButton(
+                              tooltip: 'Close',
+                              onPressed: () => Navigator.pop(ctx),
+                              icon: const Icon(Icons.close)),
+                        ])),
+                    Flexible(
+                        child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(12),
+                            child: stationTableDetails(t, kitchen))),
+                  ])),
+            ));
+    Widget badge(String label, Color background, Color foreground) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+              color: background, borderRadius: BorderRadius.circular(24)),
+          child: Text('●  $label',
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: foreground)),
+        );
+    return Material(
+      color: Colors.white,
+      elevation: 1,
+      shadowColor: const Color(0x16000000),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFE1E7E3))),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+          onTap: details,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(children: [
+                        Flexible(
+                            child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                    color: const Color(0xFFE4F3EB),
+                                    borderRadius: BorderRadius.circular(14)),
+                                child: Text(t.id,
+                                    style: const TextStyle(
+                                        color: green,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w800)))),
+                        const SizedBox(width: 8),
+                        if (ready > 0)
+                          badge('$ready ready', const Color(0xFFFFF4D7),
+                              const Color(0xFF8B6200)),
+                      ]),
+                      const SizedBox(height: 14),
+                      Text(
+                          '${t.guests} ${t.guests == 1 ? 'guest' : 'guests'} · $duration',
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 6),
+                      Text('Seated at $seatedAt',
+                          style: const TextStyle(fontSize: 14, color: muted)),
+                    ])),
+            const Divider(height: 1, color: Color(0xFFE1E7E3)),
+            ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 104),
+                child: Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: total == 0
+                        ? const Text('Seated, nothing ordered yet.',
+                            style: TextStyle(color: muted, fontSize: 14))
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                Text('$total ${total == 1 ? 'item' : 'items'}',
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700)),
+                                const SizedBox(height: 12),
+                                Wrap(spacing: 6, runSpacing: 6, children: [
+                                  for (final state in [
+                                    'New',
+                                    'Preparing',
+                                    'Ready',
+                                    'Served'
+                                  ])
+                                    if (units(state) > 0)
+                                      badge(
+                                          '${units(state)} ${state.toLowerCase()}',
+                                          state == 'Ready'
+                                              ? const Color(0xFFE4F3EB)
+                                              : const Color(0xFFF0F3F1),
+                                          state == 'Ready' ? green : muted),
+                                ]),
+                              ]))),
+            const Divider(height: 1, color: Color(0xFFE1E7E3)),
+            Container(
+                color: const Color(0xFFFAFCFB),
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                              value: ordered > 0
+                                  ? ((ordered - open) / ordered).clamp(0.0, 1.0)
+                                  : 0,
+                              minHeight: 6,
+                              backgroundColor: const Color(0xFFEDF2EF),
+                              color: green)),
+                      const SizedBox(height: 12),
+                      Text('Ordered ${money(ordered)}',
+                          style: const TextStyle(fontSize: 13, color: muted)),
+                      const SizedBox(height: 7),
+                      Row(children: [
+                        const Text('Open',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: Text(money(open),
+                                textAlign: TextAlign.end,
+                                style: const TextStyle(
+                                    color: green,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 17)))
+                      ]),
+                      const SizedBox(height: 14),
+                      const Text('View details →',
+                          style: TextStyle(
+                              color: green,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700)),
+                    ])),
+          ])),
+    );
+  }
+
+  Widget stationTableDetails(DiningTable t, bool kitchen) {
     final items = t.items.toList();
     int units(bool Function(OrderLine) test) =>
         items.where(test).fold<int>(0, (n, x) => n + x.quantity);
