@@ -6,6 +6,34 @@ import 'package:google_fonts/google_fonts.dart';
 import 'waiter_demo.dart';
 import 'toast.dart';
 
+// Commercial annotations stay on the order record, not the preparation ticket.
+String kitchenPreparationNote(String note) {
+  return note
+      .split(RegExp(r'\r?\n'))
+      .map((line) {
+        final parts = line.split(' · ');
+        final kept = <String>[];
+        for (var i = 0; i < parts.length; i++) {
+          final part = parts[i].trim();
+          if (RegExp(
+                  r'^(?:loyalty reward|coupon|discount|voucher)(?:\s*[:·-]|$)',
+                  caseSensitive: false)
+              .hasMatch(part)) {
+            // Generated reward annotations use the following segment as their title.
+            if (RegExp(r'^(?:loyalty reward|coupon|discount|voucher)$',
+                        caseSensitive: false)
+                    .hasMatch(part) &&
+                i + 1 < parts.length) i++;
+            continue;
+          }
+          if (part.isNotEmpty) kept.add(part);
+        }
+        return kept.join(' · ');
+      })
+      .where((line) => line.isNotEmpty)
+      .join('\n');
+}
+
 class StationBoard extends StatefulWidget {
   final String station;
   const StationBoard({super.key, required this.station});
@@ -652,7 +680,8 @@ class _StationBoardState extends State<StationBoard> {
     final allergyItems = ticket.items.where((i) => i.allergy).toList();
     final allergyNotes = [
       for (final i in allergyItems)
-        if (i.note.trim().isNotEmpty) i.note.trim(),
+        if (kitchenPreparationNote(i.note).isNotEmpty)
+          kitchenPreparationNote(i.note),
     ];
     final readyN = ticket.items
         .where((i) => i.status == 'Ready' || i.status == 'Served')
@@ -918,6 +947,7 @@ class _StationBoardState extends State<StationBoard> {
     final dishColour = item.dish.ticketColour;
     final open = itemOpen == item || itemCancelling == item;
     final options = item.optionsList.join(', ');
+    final preparationNote = kitchenPreparationNote(item.note);
     final boxColour = done
         ? const Color(0xFFF4F5F7)
         : dishColour ??
@@ -988,11 +1018,11 @@ class _StationBoardState extends State<StationBoard> {
                         ),
                       ),
                     ),
-                  if (item.note.isNotEmpty)
+                  if (preparationNote.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 3),
                       child: Text(
-                        'Note: ${item.note}',
+                        'Note: ${preparationNote}',
                         style: TextStyle(
                           fontSize: compact ? 13.5 : 14.5,
                           fontWeight: FontWeight.w700,
