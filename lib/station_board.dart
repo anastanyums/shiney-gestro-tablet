@@ -1490,10 +1490,14 @@ class _StationBoardState extends State<StationBoard> {
           ),
         ),
       );
-  Widget responsiveWrap(List<Widget> children, {double minWidth = 340}) =>
+  Widget responsiveWrap(List<Widget> children,
+          {double minWidth = 340, bool sessionColumns = false}) =>
       LayoutBuilder(
         builder: (context, c) {
-          final cols = (c.maxWidth / minWidth).floor().clamp(1, 4).toInt();
+          final cols =
+              sessionColumns && MediaQuery.sizeOf(context).width >= 1000
+                  ? 4
+                  : (c.maxWidth / minWidth).floor().clamp(1, 4).toInt();
           final w = (c.maxWidth - (cols - 1) * 12) / cols;
           return Wrap(
             spacing: 12,
@@ -1727,7 +1731,8 @@ class _StationBoardState extends State<StationBoard> {
               : 'Tables the waiters have seated appear here.',
         )
       else
-        responsiveWrap(list.map((t) => stationTableCard(t, kitchen)).toList()),
+        responsiveWrap(list.map((t) => stationTableCard(t, kitchen)).toList(),
+            minWidth: 300, sessionColumns: true),
     ]);
   }
 
