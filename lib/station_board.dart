@@ -46,7 +46,7 @@ class _StationBoardState extends State<StationBoard> {
   String filter = 'Active';
   bool newestFirst = false;
   int section = 0; // 0 active orders, 1 done orders, 2 active tables, 3 menu
-  String tableFilter = 'Cooking', menuFilter = 'All', menuQuery = '';
+  String tableFilter = 'All', menuFilter = 'All', menuQuery = '';
   StationTicket? confirming;
   StationTicket? cancelling; // ticket whose header asks to cancel the order
   OrderLine? itemOpen,
@@ -1682,20 +1682,10 @@ class _StationBoardState extends State<StationBoard> {
     ]);
   }
 
-  // Seated tables; a workstation other than the default only lists tables that ordered from it.
-  List<DiningTable> get seatedTables {
-    final kitchen = widget.station == 'Kitchen';
-    return demoRestaurant.tables
-        .where(
-          (t) =>
-              t.active &&
-              (allDishes ||
-                  t.items.any(
-                    (x) => x.dish.drink != kitchen && inMyWs(x.dish),
-                  )),
-        )
-        .toList();
-  }
+  // Session overview includes every occupied dining table, regardless of workstation.
+  List<DiningTable> get seatedTables =>
+      demoRestaurant.tables.where((t) => t.active && !t.virtual).toList()
+        ..sort((a, b) => a.started!.compareTo(b.started!));
 
   Widget activeTables() {
     final kitchen = widget.station == 'Kitchen';
@@ -1758,16 +1748,22 @@ class _StationBoardState extends State<StationBoard> {
   }
 
   Widget stationTableCard(DiningTable t, bool kitchen) {
-    final items = t.items
-        .where((x) => x.dish.drink != kitchen && inMyWs(x.dish))
-        .toList();
+    final items = t.items.toList();
     int units(bool Function(OrderLine) test) =>
         items.where(test).fold<int>(0, (n, x) => n + x.quantity);
     final total = units((x) => true),
         done = units((x) => x.status == 'Ready' || x.status == 'Served'),
         served = units((x) => x.status == 'Served');
     final open = total - done;
-    final pending = items.where((x) => x.status != 'Served').toList();
+    final pending = items;
+    final orderNumbers = demoRestaurant.tickets
+        .where((ticket) =>
+            ticket.table == t.id &&
+            ticket.items.any((item) => items.contains(item)))
+        .map((ticket) => ticket.number)
+        .toSet()
+        .toList()
+      ..sort();
     final mins = DateTime.now().difference(t.started!).inMinutes;
     final slow = mins >= 45;
     final hasAllergy = pending.any((x) => x.allergy);
@@ -1794,7 +1790,7 @@ class _StationBoardState extends State<StationBoard> {
               const SizedBox(width: 12),
               const Icon(Icons.people_alt_outlined, size: 16, color: muted),
               const SizedBox(width: 4),
-              Text('${t.guests}', style: const TextStyle(color: muted)),
+              Text('${t.guests} guests', style: const TextStyle(color: muted)),
               const SizedBox(width: 12),
               Icon(
                 Icons.schedule,
@@ -1824,7 +1820,7 @@ class _StationBoardState extends State<StationBoard> {
                 ),
               statusPill(
                 open > 0
-                    ? '$open ${kitchen ? 'cooking' : 'to make'}'
+                    ? '$open preparing'
                     : total == 0
                         ? 'Nothing yet'
                         : 'All done',
@@ -1832,6 +1828,16 @@ class _StationBoardState extends State<StationBoard> {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Text('Started ${t.started!.toLocal().toString().substring(0, 16)}',
+              style: const TextStyle(fontSize: 12, color: muted)),
+          const SizedBox(height: 4),
+          Text(
+              '${orderNumbers.length} orders · $total items · ${items.where((x) => x.status == 'Ready').fold<int>(0, (n, x) => n + x.quantity)} ready · $served served',
+              style: const TextStyle(fontSize: 12, color: muted)),
+          if (orderNumbers.isNotEmpty)
+            Text('Orders: ${orderNumbers.map((n) => '#$n').join(', ')}',
+                style: const TextStyle(fontSize: 12, color: muted)),
           if (total > 0) ...[
             const SizedBox(height: 14),
             ClipRRect(
@@ -1852,7 +1858,7 @@ class _StationBoardState extends State<StationBoard> {
           const SizedBox(height: 8),
           if (total == 0)
             Text(
-              'No ${kitchen ? 'food' : 'drinks'} ordered yet',
+              'No items ordered yet',
               style: const TextStyle(color: Color(0xFFA9AEB5)),
             ),
           ...pending.map(
@@ -1874,15 +1880,21 @@ class _StationBoardState extends State<StationBoard> {
                       children: [
                         Text(
                           x.dish.ticketName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
-                        if (x.extras.isNotEmpty)
+                        Text(
+                            '${x.dish.drink ? 'Bar' : 'Kitchen'}${x.optionsText.isEmpty ? '' : ' · ${x.optionsText}'}',
+                            style: const TextStyle(fontSize: 12, color: muted)),
+                        if (x.allergy ||
+                            kitchenPreparationNote(x.note).isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              x.extras,
+                              [
+                                if (x.allergy) 'ALLERGY',
+                                if (kitchenPreparationNote(x.note).isNotEmpty)
+                                  kitchenPreparationNote(x.note)
+                              ].join(' · '),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: x.allergy ? Colors.red.shade700 : muted,
