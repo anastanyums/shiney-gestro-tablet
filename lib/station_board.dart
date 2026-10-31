@@ -46,7 +46,7 @@ class _StationBoardState extends State<StationBoard> {
   String filter = 'Active';
   bool newestFirst = false;
   int section = 0; // 0 active orders, 1 done orders, 2 active tables, 3 menu
-  String tableFilter = 'All', menuFilter = 'All', menuQuery = '';
+  String menuFilter = 'All', menuQuery = '';
   StationTicket? confirming;
   StationTicket? cancelling; // ticket whose header asks to cancel the order
   OrderLine? itemOpen,
@@ -1677,63 +1677,21 @@ class _StationBoardState extends State<StationBoard> {
 
   Widget activeTables() {
     final kitchen = widget.station == 'Kitchen';
-    final seated = seatedTables;
-    int openUnits(DiningTable t) => t.items
-        .where(
-          (x) =>
-              x.dish.drink != kitchen &&
-              inMyWs(x.dish) &&
-              (x.status == 'New' || x.status == 'Preparing'),
-        )
-        .fold<int>(0, (n, x) => n + x.quantity);
-    final cooking = seated.where((t) => openUnits(t) > 0).toList()
-      ..sort((a, b) => a.started!.compareTo(b.started!));
-    final list = tableFilter == 'Cooking' ? cooking : seated;
-    return page([
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          filterChip(
-            'Cooking',
-            cooking.length,
-            tableFilter,
-            (v) => tableFilter = v,
-            label: kitchen ? 'Cooking now' : 'Making now',
-          ),
-          filterChip(
-            'All',
-            seated.length,
-            tableFilter,
-            (v) => tableFilter = v,
-            label: 'All seated',
-          ),
-          if (tableFilter == 'Cooking' && cooking.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.only(left: 6),
-              child: Text(
-                'Longest waiting first',
-                style: TextStyle(color: Color(0xFF8A8FA3), fontSize: 12),
-              ),
-            ),
-        ],
-      ),
-      const SizedBox(height: 16),
-      if (list.isEmpty)
-        emptyState(
-          Icons.table_restaurant_outlined,
-          tableFilter == 'Cooking'
-              ? 'Nothing to ${kitchen ? 'cook' : 'make'}'
-              : 'No active tables',
-          tableFilter == 'Cooking'
-              ? 'Every seated table is up to date.'
-              : 'Tables the waiters have seated appear here.',
-        )
-      else
-        responsiveWrap(list.map((t) => stationTableCard(t, kitchen)).toList(),
-            minWidth: 300, sessionColumns: true),
-    ]);
+    final list = seatedTables;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (list.isEmpty)
+          emptyState(
+            Icons.table_restaurant_outlined,
+            'No active tables',
+            'Tables the waiters have seated appear here.',
+          )
+        else
+          responsiveWrap(list.map((t) => stationTableCard(t, kitchen)).toList(),
+              minWidth: 300, sessionColumns: true),
+      ],
+    );
   }
 
   Widget stationTableCard(DiningTable t, bool kitchen) {
