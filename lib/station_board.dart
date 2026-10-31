@@ -356,8 +356,11 @@ class _StationBoardState extends State<StationBoard> {
     );
   }
 
-  // The header scrolls away; pulling down reveals station and role controls.
-  Widget stationShell(Widget body) => NestedScrollView(
+  // Only Active orders has station/role controls; the other tabs use the full body.
+  // Pulling down on Active orders reveals the header even when there are no tickets.
+  Widget stationShell(Widget body) {
+    if (section != 0) return body;
+    return NestedScrollView(
     floatHeaderSlivers: true,
     headerSliverBuilder: (context, _) => [
       SliverToBoxAdapter(
@@ -371,7 +374,8 @@ class _StationBoardState extends State<StationBoard> {
       ),
     ],
     body: body,
-  );
+    );
+  }
 
   void explainSingleStation() => showDialog<void>(
     context: context,
