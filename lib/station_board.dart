@@ -2330,51 +2330,7 @@ class _StationBoardState extends State<StationBoard> {
             ),
           ),
           variantRow(d),
-          for (final g in d.kitchenVariations)
-            for (final o in g.allOptions.where((o) => !o.available))
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF3D6),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE8CB82)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${g.name} · SOLD OUT',
-                        style: const TextStyle(
-                            fontSize: 12, color: Color(0xFF805800)),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(o.name,
-                          style: const TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 8),
-                      if (demoRestaurant.soldOut.contains(d.name))
-                        const Text('Make the whole product available first.')
-                      else
-                        SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: green,
-                              minimumSize: const Size(0, 48),
-                            ),
-                            onPressed: () => toggleVariant(d, o),
-                            icon: const Icon(Icons.check_circle_outline,
-                                size: 18),
-                            label: const Text('Make available'),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+
         ],
       ),
     );
@@ -2383,79 +2339,62 @@ class _StationBoardState extends State<StationBoard> {
   // One fixed-height row on every card, so all dishes stay the same size. Dishes with variants
   // (portion, spice, extras...) open a sheet where each variant can be switched off or on.
   Widget variantRow(Dish d) {
-    if (d.kitchenVariations.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 12),
-        child: SizedBox(
-          height: 44,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Whole product only',
-              style: TextStyle(color: Color(0xFFB0B6BF), fontSize: 13),
-            ),
-          ),
-        ),
-      );
-    }
-    final dishOut = demoRestaurant.soldOut.contains(d.name);
-    final all = [for (final g in d.kitchenVariations) ...g.allOptions];
-    final outN = dishOut ? all.length : all.where((o) => !o.available).length;
+    final options = [for (final g in d.kitchenVariations) ...g.allOptions];
+    final unavailable = options.where((o) => !o.available).toList();
+    final wholeOut = demoRestaurant.soldOut.contains(d.name);
+    final needsRestock = wholeOut || unavailable.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Material(
-        color: Colors.white,
+        color: needsRestock && options.isNotEmpty
+            ? const Color(0xFFFFF3D6)
+            : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFFD5DDD8), width: 1.5),
+          side: BorderSide(
+            color: options.isEmpty ? Colors.transparent : const Color(0xFFD5DDD8),
+          ),
         ),
         child: InkWell(
-          customBorder: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          onTap: () => openVariants(d),
+          borderRadius: BorderRadius.circular(14),
+          onTap: options.isEmpty ? null : () => openVariants(d),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 48),
+            constraints: const BoxConstraints(minHeight: 56),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              child: Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                crossAxisAlignment: WrapCrossAlignment.center,
+              child: Row(
                 children: [
-                  const Icon(Icons.tune_rounded, size: 18, color: green),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Variants · ${all.length}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (outN > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFBE4E1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        outN == all.length ? 'all sold out' : '$outN sold out',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.red.shade700,
+                  if (options.isNotEmpty) ...[
+                    const Icon(Icons.tune_rounded, size: 18, color: green),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          options.isEmpty ? 'Whole product only' : 'Variants · ${options.length}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 14,
+                            fontWeight: options.isEmpty ? FontWeight.w400 : FontWeight.w700,
+                            color: options.isEmpty ? const Color(0xFF8A8FA3) : ink),
                         ),
-                      ),
+                        if (options.isNotEmpty && needsRestock) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            wholeOut ? 'Whole product sold out' : '${unavailable.map((o) => o.name).join(', ')} · sold out',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF805800)),
+                          ),
+                        ],
+                      ],
                     ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.expand_more_rounded,
-                    color: Color(0xFF8A8FA3),
                   ),
+                  if (options.isNotEmpty)
+                    const Icon(Icons.chevron_right_rounded, color: green),
                 ],
               ),
             ),
@@ -2521,6 +2460,57 @@ class _StationBoardState extends State<StationBoard> {
                           : const Color(0xFF8A8FA3),
                     ),
                   ),
+                  const SizedBox(height: 16),
+          for (final g in d.kitchenVariations)
+            for (final o in g.allOptions.where((o) => !o.available))
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3D6),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE8CB82)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${g.name} · SOLD OUT',
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF805800)),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(o.name,
+                          style: const TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      if (demoRestaurant.soldOut.contains(d.name))
+                        const Text('Make the whole product available first.')
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: green,
+                              minimumSize: const Size(0, 48),
+                            ),
+                            onPressed: () {
+                              toggleVariant(d, o, () {
+                                if (ctx.mounted) set(() {});
+                              });
+                              set(() {});
+                            },
+                            icon: const Icon(Icons.check_circle_outline,
+                                size: 18),
+                            label: const Text('Make available'),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
                   const SizedBox(height: 16),
                   for (final g in d.kitchenVariations) ...[
                     Text(
