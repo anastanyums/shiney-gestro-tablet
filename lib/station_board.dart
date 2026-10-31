@@ -232,37 +232,53 @@ class _StationBoardState extends State<StationBoard> {
                             children: [
                               Expanded(
                                 child: tickets.isEmpty
-                                    ? Center(
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(24),
-                                          child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                widget.station == 'Kitchen'
-                                                    ? Icons.restaurant
-                                                    : Icons.local_bar,
-                                                color: green,
-                                                size: 48,
-                                              ),
-                                              const SizedBox(height: 16),
-                                              Text(
-                                                'No ${filter.toLowerCase()} tickets',
-                                                style: const TextStyle(
-                                                  color: Color(0xFF23263A),
-                                                  fontSize: 22,
+                                    ? LayoutBuilder(
+                                        builder: (context, constraints) =>
+                                            SingleChildScrollView(
+                                          physics:
+                                              const AlwaysScrollableScrollPhysics(),
+                                          child: SizedBox(
+                                            height: constraints.maxHeight,
+                                            child: Center(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(24),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      widget.station ==
+                                                              'Kitchen'
+                                                          ? Icons.restaurant
+                                                          : Icons.local_bar,
+                                                      color: green,
+                                                      size: 48,
+                                                    ),
+                                                    const SizedBox(height: 16),
+                                                    Text(
+                                                      'No ${filter.toLowerCase()} tickets',
+                                                      style: const TextStyle(
+                                                        color:
+                                                            Color(0xFF23263A),
+                                                        fontSize: 22,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 10),
+                                                    const Text(
+                                                      'Orders sent by the waiter will appear here.',
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      style: TextStyle(
+                                                        color:
+                                                            Color(0xFF8A8FA3),
+                                                        height: 1.6,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
-                                              const SizedBox(height: 10),
-                                              const Text(
-                                                'Orders sent by the waiter will appear here.',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  color: Color(0xFF8A8FA3),
-                                                  height: 1.6,
-                                                ),
-                                              ),
-                                            ],
+                                            ),
                                           ),
                                         ),
                                       )
@@ -348,8 +364,22 @@ class _StationBoardState extends State<StationBoard> {
     );
   }
 
-  // Keep the board and session columns unobstructed by a station header.
-  Widget stationShell(Widget body) => body;
+  // The header scrolls away; pulling down reveals station and role controls.
+  Widget stationShell(Widget body) => NestedScrollView(
+        floatHeaderSlivers: true,
+        headerSliverBuilder: (context, _) => [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: walletCard(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                children: [stationBar()],
+              ),
+            ),
+          ),
+        ],
+        body: body,
+      );
 
   void explainSingleStation() => showDialog<void>(
         context: context,
