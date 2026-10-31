@@ -18,12 +18,10 @@ import 'waiter_demo.dart'
     show
         ShineyLoadingIndicator,
         SwitchRoleButton,
-        onSwitchRole,
         Charges,
         foodLabelSpice,
         money,
         collectionTimezone,
-        collectionNow,
         CollectionChoice,
         CollectionReadySheet,
         VoucherScannerPage,
@@ -59,7 +57,7 @@ class PosRoot extends StatefulWidget {
 class _PosRootState extends State<PosRoot> {
   late Future<void> loading;
   RealtimeChannel? channel;
-  Timer? debounceMenu, debounceOrders, orderTypePoll;
+  Timer? debounceMenu, debounceOrders, orderTypePoll, fallbackTimer;
   bool orderTypesRefreshing = false;
 
   @override
@@ -72,6 +70,7 @@ class _PosRootState extends State<PosRoot> {
   void dispose() {
     debounceMenu?.cancel();
     debounceOrders?.cancel();
+    fallbackTimer?.cancel();
     orderTypePoll?.cancel();
     if (channel != null) supa.removeChannel(channel!);
     super.dispose();
@@ -135,13 +134,22 @@ class _PosRootState extends State<PosRoot> {
         orderTypesRefreshing = false;
       }
     }
+
     orderTypePoll?.cancel();
-    orderTypePoll = Timer.periodic(const Duration(seconds: 30), (_) => reloadOrderTypes());
+    orderTypePoll = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => reloadOrderTypes(),
+    );
     var ch = supa.channel('pos-live');
     ch = ch.onPostgresChanges(
       event: PostgresChangeEvent.update,
-      schema: 'public', table: 'restaurants',
-      filter: PostgresChangeFilter(type: PostgresChangeFilterType.eq, column: 'id', value: rid),
+      schema: 'public',
+      table: 'restaurants',
+      filter: PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'id',
+        value: rid,
+      ),
       callback: (_) => reloadOrderTypes(),
     );
     for (final t in [
@@ -155,6 +163,11 @@ class _PosRootState extends State<PosRoot> {
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: t,
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'restaurant_id',
+          value: rid,
+        ),
         callback: (_) => later(
           () => debounceMenu,
           (x) => debounceMenu = x,
@@ -167,6 +180,11 @@ class _PosRootState extends State<PosRoot> {
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: t,
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'restaurant_id',
+          value: rid,
+        ),
         callback: (_) => later(
           () => debounceOrders,
           (x) => debounceOrders = x,
@@ -174,7 +192,29 @@ class _PosRootState extends State<PosRoot> {
         ),
       );
     }
-    channel = ch.subscribe();
+    void reloadAll() {
+      if (!mounted) return;
+      later(
+        () => debounceMenu,
+        (x) => debounceMenu = x,
+        () => pos.loadMenu(rid),
+      );
+      later(
+        () => debounceOrders,
+        (x) => debounceOrders = x,
+        () => pos.loadOrders(rid),
+      );
+      reloadOrderTypes();
+    }
+
+    channel = ch.subscribe((status, _) {
+      if (status == RealtimeSubscribeStatus.subscribed) reloadAll();
+    });
+    fallbackTimer?.cancel();
+    fallbackTimer = Timer.periodic(
+      const Duration(seconds: 60),
+      (_) => reloadAll(),
+    );
   }
 
   @override
@@ -581,18 +621,31 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
   late final TextEditingController name = TextEditingController(
     text: widget.initialName,
   );
-  late Channel? selected = pos.enabledChannels.where((c) => c.key == widget.initialChannel.key).firstOrNull ?? pos.enabledChannels.firstOrNull;
+  late Channel? selected =
+      pos.enabledChannels
+          .where((c) => c.key == widget.initialChannel.key)
+          .firstOrNull ??
+      pos.enabledChannels.firstOrNull;
   @override
   void initState() {
     super.initState();
     pos.addListener(_syncChoices);
   }
+
   void _syncChoices() {
     if (!mounted) return;
-    final next = pos.enabledChannels.where((c) => c.key == selected?.key).firstOrNull ?? pos.enabledChannels.firstOrNull;
-    if (next != selected) setState(() { selected = next; _nameError = false; });
-    else setState(() {});
+    final next =
+        pos.enabledChannels.where((c) => c.key == selected?.key).firstOrNull ??
+        pos.enabledChannels.firstOrNull;
+    if (next != selected)
+      setState(() {
+        selected = next;
+        _nameError = false;
+      });
+    else
+      setState(() {});
   }
+
   @override
   void dispose() {
     pos.removeListener(_syncChoices);
@@ -606,7 +659,8 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
   bool get _requiresName => selected?.type == 'delivery';
   void save() {
     final choice = selected;
-    if (choice == null || !pos.enabledChannels.any((c) => c.key == choice.key)) return;
+    if (choice == null || !pos.enabledChannels.any((c) => c.key == choice.key))
+      return;
     if (_requiresName && name.text.trim().isEmpty) {
       setState(() => _nameError = true);
       _nameFocus.requestFocus();
@@ -730,10 +784,13 @@ class _GuestOrderDetailsDialogState extends State<GuestOrderDetailsDialog> {
               ),
             ),
             if (pos.enabledChannels.isEmpty)
-              const Padding(padding: EdgeInsets.only(top: 12), child: Text(
-                'No order types are enabled. Ask the restaurant owner to enable one in Mission Control → Settings → Order types.',
-                style: TextStyle(color: Color(0xFF8A4B00)),
-              )),
+              const Padding(
+                padding: EdgeInsets.only(top: 12),
+                child: Text(
+                  'No order types are enabled. Ask the restaurant owner to enable one in Mission Control → Settings → Order types.',
+                  style: TextStyle(color: Color(0xFF8A4B00)),
+                ),
+              ),
             const SizedBox(height: 24),
             TextField(
               controller: name,
@@ -852,13 +909,22 @@ class _GuestDetailsPreviewState extends State<GuestDetailsPreview> {
 }
 
 Channel channelFor(String? label, {String? type}) {
-  final known = [...pos.configuredChannels, ...channels].where((c) => c.label == label || c.short == label).firstOrNull;
+  final known = [
+    ...pos.configuredChannels,
+    ...channels,
+  ].where((c) => c.label == label || c.short == label).firstOrNull;
   if (known != null) return known;
   // Preserve historical custom labels after the owner renames or disables a type.
   final name = label?.trim();
   if (name == null || name.isEmpty) return channels.first;
-  return Channel('historical', name, type == 'takeaway' ? 'takeaway' : 'delivery', name,
-    type == 'takeaway' ? Icons.shopping_bag_outlined : Icons.delivery_dining, forest);
+  return Channel(
+    'historical',
+    name,
+    type == 'takeaway' ? 'takeaway' : 'delivery',
+    name,
+    type == 'takeaway' ? Icons.shopping_bag_outlined : Icons.delivery_dining,
+    forest,
+  );
 }
 
 class PosData extends ChangeNotifier {
@@ -874,27 +940,47 @@ class PosData extends ChangeNotifier {
     configuredChannels = List.of(channels);
     enabledChannels = List.of(channels);
   }
+
   Future<void> loadOrderChannels(String rid) async {
-    final row = await supa.from('restaurants').select('pos_order_channels').eq('id', rid).single();
+    final row = await supa
+        .from('restaurants')
+        .select('pos_order_channels')
+        .eq('id', rid)
+        .single();
     if (_channelRestaurant != rid) return;
     final raw = row['pos_order_channels'];
-    if (raw is! List) throw const FormatException('Order type settings unavailable');
+    if (raw is! List)
+      throw const FormatException('Order type settings unavailable');
     final fingerprint = jsonEncode(raw);
     if (_channelFingerprint == fingerprint) return;
     final all = <Channel>[], enabled = <Channel>[];
     for (final value in raw) {
       final item = Map<String, dynamic>.from(value as Map);
-      final key = item['key'] as String, label = item['label'] as String, type = item['type'] as String;
+      final key = item['key'] as String,
+          label = item['label'] as String,
+          type = item['type'] as String;
       final standard = channels.where((c) => c.key == key).firstOrNull;
-      final choice = standard ?? Channel(key, label, type, label,
-        type == 'takeaway' ? Icons.shopping_bag_outlined : Icons.delivery_dining, forest);
+      final choice =
+          standard ??
+          Channel(
+            key,
+            label,
+            type,
+            label,
+            type == 'takeaway'
+                ? Icons.shopping_bag_outlined
+                : Icons.delivery_dining,
+            forest,
+          );
       all.add(choice);
       if (item['enabled'] == true) enabled.add(choice);
     }
-    configuredChannels = all; enabledChannels = enabled;
+    configuredChannels = all;
+    enabledChannels = enabled;
     _channelFingerprint = fingerprint;
     notifyListeners();
   }
+
   List<Product> products = [];
   List<String> categories = [];
   List<Map<String, dynamic>> openOrders = [];
@@ -1888,7 +1974,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               button(
                 'Apply voucher',
                 partial != null && partial > 0 && partial <= maximum
-                    ? () => apply(partial!)
+                    ? () => apply(partial)
                     : null,
               ),
               button(
@@ -1978,12 +2064,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   });
 
   Future<bool> requireGuestName() async {
-    final configured = pos.enabledChannels.where((c) => c.key == channel.key).firstOrNull;
+    final configured = pos.enabledChannels
+        .where((c) => c.key == channel.key)
+        .firstOrNull;
     if (configured != null) channel = configured;
     if (!pos.enabledChannels.any((c) => c.key == channel.key)) {
       message('Choose an enabled order type in Guest & order.');
       await customerDialog();
-      if (!mounted || !pos.enabledChannels.any((c) => c.key == channel.key)) return false;
+      if (!mounted || !pos.enabledChannels.any((c) => c.key == channel.key))
+        return false;
     }
     if (channel.type == 'takeaway' || customerName.trim().isNotEmpty)
       return true;
@@ -2511,9 +2600,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     } catch (e) {
       if (mounted)
         message(
-          e is PostgrestException
-              ? e.message
-              : 'Payment could not be confirmed. Retry to check the same payment.',
+          e is PostgrestException ? e.message : 'Payment could not be confirmed. Retry to check the same payment.',
         );
     } finally {
       if (mounted) setState(() => busy = false);
@@ -2528,9 +2615,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             as Map,
       );
     } on PostgrestException catch (e) {
-      if (RegExp(
-        r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$',
-      ).hasMatch(e.code ?? '')) {
+      if (RegExp(r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$')
+          .hasMatch(e.code ?? '')) {
         _voucherRejected = true;
       }
       rethrow;
@@ -3030,9 +3116,6 @@ Future<CartLine?> pickPosProduct(
   int unit() =>
       p.price +
       picked.values.expand((s) => s).fold<int>(0, (n, o) => n + o.delta);
-  String chipLabel(VarOption o) => o.delta == 0
-      ? o.name
-      : '${o.name}  ${o.delta > 0 ? '+' : '−'}${money(o.delta.abs())}';
   void choose(VarGroup g, VarOption o, StateSetter update) => update(() {
     final s = picked[g]!;
     problem = null;
@@ -3643,9 +3726,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
   ];
   bool paid(Map<String, dynamic> o) =>
       lines(o).isNotEmpty &&
-      lines(
-        o,
-      ).every((i) => (i['paid_quantity'] as int) >= (i['quantity'] as int));
+      lines(o)
+          .every((i) => (i['paid_quantity'] as int) >= (i['quantity'] as int));
   bool ready(Map<String, dynamic> o) =>
       lines(o).isNotEmpty &&
       lines(o).every((i) => i['status'] == 'Ready' || i['status'] == 'Served');
@@ -3725,7 +3807,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   Future<void> editDetails(Map<String, dynamic> o) async {
-    final ch = channelFor(o['channel'] as String?, type: o['order_type'] as String?);
+    final ch = channelFor(
+      o['channel'] as String?,
+      type: o['order_type'] as String?,
+    );
     final name = TextEditingController(
       text: o['customer_name'] as String? ?? '',
     );
@@ -3850,7 +3935,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Future<void> handover(Map<String, dynamic> o) async {
     final id = o['id'] as String;
     if (busy.contains(id)) return;
-    final ch = channelFor(o['channel'] as String?, type: o['order_type'] as String?);
+    final ch = channelFor(
+      o['channel'] as String?,
+      type: o['order_type'] as String?,
+    );
     final name = (o['customer_name'] as String? ?? '').trim();
     final ref = (o['external_ref'] as String? ?? '').trim();
     if (partner(ch) && ref.isEmpty) {
@@ -4129,7 +4217,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
   );
 
   Widget orderCard(BuildContext context, Map<String, dynamic> o) {
-    final ch = channelFor(o['channel'] as String?, type: o['order_type'] as String?);
+    final ch = channelFor(
+      o['channel'] as String?,
+      type: o['order_type'] as String?,
+    );
     final entries = lines(o),
         isPaid = paid(o),
         isReady = ready(o),
@@ -4497,6 +4588,11 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
           event: PostgresChangeEvent.all,
           schema: 'public',
           table: 'sales_invoices',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'restaurant_id',
+            value: pos.restaurant!.id,
+          ),
           callback: (_) => load(),
         )
         .subscribe();
@@ -5466,7 +5562,6 @@ Receipt buildReceipt(Map<String, dynamic> i, int cols, {InvoiceStyle? style}) {
   rc.rule();
   for (final l in ((i['lines'] as List?) ?? const []).cast<Map>()) {
     final label = '${l['qty']}x ${l['name']}';
-    final total = s.amount((l['total_cents'] as num).toInt());
     if (s.layout == 'detailed') {
       rc.text(label);
       amountRow('  Amount', (l['total_cents'] as num).toInt());
@@ -7737,9 +7832,8 @@ class _InvoiceCorrectionPageState extends State<InvoiceCorrectionPage> {
       setState(() => pending = null);
       Navigator.pop(context, result);
     } on PostgrestException catch (e) {
-      if (RegExp(
-        r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$',
-      ).hasMatch(e.code ?? '')) {
+      if (RegExp(r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$')
+          .hasMatch(e.code ?? '')) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove(storageKey);
         if (mounted)

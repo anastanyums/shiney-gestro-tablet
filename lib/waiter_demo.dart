@@ -20,10 +20,10 @@ import 'toast.dart';
 // Live voucher operations are supplied by the authenticated app bootstrap.
 Future<Map<String, dynamic>> Function(String code)? lookupServiceVoucher;
 Future<Map<String, dynamic>> Function(Map<String, dynamic> request)?
-    submitServiceVoucherPayment;
+submitServiceVoucherPayment;
 Future<Map<String, dynamic>> Function(String code)? lookupServiceVoucherSale;
 Future<Map<String, dynamic>> Function(Map<String, dynamic> request)?
-    submitServiceVoucherSale;
+submitServiceVoucherSale;
 String? serviceVoucherRestaurantName;
 String Function()? makeServiceVoucherRequestId;
 
@@ -36,24 +36,37 @@ class VoucherPaymentRejected implements Exception {
 
 // Design system shared by every tablet screen: clean white screens, soft grey
 // cards, pill-shaped buttons and the Shiney Gestro green as the accent.
-const green = Color(0xFF246B50), // brand accent
-    paper = Color(0xFFFFFFFF), // screen background
-    pale = Color(0xFFE6F3EC), // soft green: selected, seated
-    ink = Color(0xFF23263A), // main text (Wallet style navy)
-    sub = Color(0xFF4A4E63), // secondary text, readable on white
-    surface = Color(0xFFF4F5F7), // cards, fields, list rows
+const green =
+        Color(0xFF246B50), // brand accent
+    paper =
+        Color(0xFFFFFFFF), // screen background
+    pale =
+        Color(0xFFE6F3EC), // soft green: selected, seated
+    ink =
+        Color(0xFF23263A), // main text (Wallet style navy)
+    sub =
+        Color(0xFF4A4E63), // secondary text, readable on white
+    surface =
+        Color(0xFFF4F5F7), // cards, fields, list rows
     surface2 = Color(0xFFECEEF1); // dividers, pressed states
 
 // Wallet style used by the Service app: light grey page, white cards,
 // soft round icons and Montserrat.
-const wCanvas = Color(0xFFF5F6F8), // page background
-    wLine = Color(0xFFECEEF2), // row dividers
-    wSoft = Color(0xFFEEF4F1), // soft green circles
-    wMuted = Color(0xFF8A8FA3), // inactive icons
-    wPaid = Color(0xFF148A70), // paid amounts
-    wAmberBg = Color(0xFFFEF3C7), // food ready
+const wCanvas =
+        Color(0xFFF5F6F8), // page background
+    wLine =
+        Color(0xFFECEEF2), // row dividers
+    wSoft =
+        Color(0xFFEEF4F1), // soft green circles
+    wMuted =
+        Color(0xFF8A8FA3), // inactive icons
+    wPaid =
+        Color(0xFF148A70), // paid amounts
+    wAmberBg =
+        Color(0xFFFEF3C7), // food ready
     wAmber = Color(0xFF92400E),
-    wBlueBg = Color(0xFFE3E9FA), // reserved
+    wBlueBg =
+        Color(0xFFE3E9FA), // reserved
     wBlue = Color(0xFF2A4AA0),
     wLong = Color(0xFFB4410E); // long running session
 
@@ -70,9 +83,8 @@ ThemeData shineyTheme() {
   final pill = const StadiumBorder();
   const buttonText = TextStyle(fontWeight: FontWeight.w700, fontSize: 15);
   return base.copyWith(
-    textTheme: GoogleFonts.plusJakartaSansTextTheme(
-      base.textTheme,
-    ).apply(bodyColor: ink, displayColor: ink),
+    textTheme: GoogleFonts.plusJakartaSansTextTheme(base.textTheme)
+        .apply(bodyColor: ink, displayColor: ink),
     appBarTheme: const AppBarTheme(
       backgroundColor: paper,
       surfaceTintColor: paper,
@@ -183,9 +195,8 @@ ThemeData walletTheme() {
   final base = shineyTheme();
   return base.copyWith(
     scaffoldBackgroundColor: wCanvas,
-    textTheme: GoogleFonts.montserratTextTheme(
-      base.textTheme,
-    ).apply(bodyColor: ink, displayColor: ink),
+    textTheme: GoogleFonts.montserratTextTheme(base.textTheme)
+        .apply(bodyColor: ink, displayColor: ink),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: green,
@@ -354,56 +365,54 @@ Widget walletCard({
   required List<Widget> children,
   EdgeInsetsGeometry padding = const EdgeInsets.fromLTRB(16, 12, 16, 20),
   CrossAxisAlignment align = CrossAxisAlignment.stretch,
-}) =>
-    Container(
-      width: double.infinity,
-      padding: padding,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: const [
-          BoxShadow(
-              color: Color(0x1023263A), blurRadius: 20, offset: Offset(0, 6)),
-        ],
-      ),
-      child: Column(crossAxisAlignment: align, children: children),
-    );
+}) => Container(
+  width: double.infinity,
+  padding: padding,
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(22),
+    boxShadow: const [
+      BoxShadow(color: Color(0x1023263A), blurRadius: 20, offset: Offset(0, 6)),
+    ],
+  ),
+  child: Column(crossAxisAlignment: align, children: children),
+);
 
 // Small label, big centred number and a note: "SESSION RUNNING 69:14:56".
 Widget walletStat(String label, String value, String note) => Column(
-      children: [
-        Text(
-          label.toUpperCase(),
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            letterSpacing: .5,
-            color: sub,
-          ),
+  children: [
+    Text(
+      label.toUpperCase(),
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: .5,
+        color: sub,
+      ),
+    ),
+    const SizedBox(height: 4),
+    FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        value,
+        style: const TextStyle(
+          fontSize: 36,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -.3,
+          color: ink,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
-        const SizedBox(height: 4),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -.3,
-              color: ink,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          note,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, color: sub),
-        ),
-      ],
-    );
+      ),
+    ),
+    const SizedBox(height: 6),
+    Text(
+      note,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 12, color: sub),
+    ),
+  ],
+);
 
 // Soft round badge with a table number or short text inside.
 Widget walletRound(
@@ -411,27 +420,26 @@ Widget walletRound(
   double size = 46,
   Color bg = wSoft,
   Color fg = green,
-}) =>
-    Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: size * .3,
-              fontWeight: FontWeight.w700,
-              color: fg,
-            ),
-          ),
+}) => Container(
+  width: size,
+  height: size,
+  alignment: Alignment.center,
+  decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+  child: Padding(
+    padding: const EdgeInsets.all(6),
+    child: FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: size * .3,
+          fontWeight: FontWeight.w700,
+          color: fg,
         ),
       ),
-    );
+    ),
+  ),
+);
 
 const walletDivider = Divider(height: 1, thickness: 1, color: wLine);
 
@@ -439,9 +447,9 @@ const walletDivider = Divider(height: 1, thickness: 1, color: wLine);
 String money(int cents) {
   final a = cents.abs();
   final whole = (a ~/ 100).toString().replaceAllMapped(
-        RegExp(r'\B(?=(\d{3})+(?!\d))'),
-        (m) => ',',
-      );
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (m) => ',',
+  );
   return '${cents < 0 ? '-' : ''}Rs. $whole.${(a % 100).toString().padLeft(2, '0')}';
 }
 
@@ -467,15 +475,15 @@ class KitchenTicketStyle {
       return seconds <= 0
           ? 2
           : seconds <= warnMinutes * 60
-              ? 1
-              : 0;
+          ? 1
+          : 0;
     }
     final minutes = clock.difference(created).inMinutes;
     return minutes >= lateMinutes
         ? 2
         : minutes >= warnMinutes
-            ? 1
-            : 0;
+        ? 1
+        : 0;
   }
 
   static void load(Map<String, dynamic> r) {
@@ -563,83 +571,81 @@ class _WaiterLoginState extends State<WaiterLogin> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: paper,
-        appBar: AppBar(
-          title: const ShineyBrand(markSize: 28, fontSize: 20),
-          backgroundColor: paper,
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListView(
-              padding: const EdgeInsets.all(28),
-              shrinkWrap: true,
-              children: [
-                const Icon(Icons.table_restaurant_outlined,
-                    size: 48, color: green),
-                const SizedBox(height: 22),
-                const Text(
-                  'Welcome back',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 8),
-                const Text('Sign in to try your waiter workspace.'),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: username,
-                  autocorrect: false,
-                  decoration: const InputDecoration(labelText: 'Username'),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: password,
-                  obscureText: obscure,
-                  autocorrect: false,
-                  enableSuggestions: false,
-                  onSubmitted: (_) => login(),
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    suffixIcon: IconButton(
-                      tooltip: obscure ? 'Show password' : 'Hide password',
-                      onPressed: () => setState(() => obscure = !obscure),
-                      icon: Icon(
-                        obscure
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                    ),
-                  ),
-                ),
-                if (error != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child:
-                        Text(error!, style: const TextStyle(color: Colors.red)),
-                  ),
-                const SizedBox(height: 22),
-                FilledButton(
-                  onPressed: login,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: green,
-                    minimumSize: const Size.fromHeight(52),
-                  ),
-                  child: const Text('Sign in to demo'),
-                ),
-                const SizedBox(height: 22),
-                const Text(
-                  'LOCAL DEMO · No real payments\nSample data resets when the app restarts. This sign-in is not secure production authentication.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black54,
-                    height: 1.6,
-                  ),
-                ),
-              ],
+    backgroundColor: paper,
+    appBar: AppBar(
+      title: const ShineyBrand(markSize: 28, fontSize: 20),
+      backgroundColor: paper,
+    ),
+    body: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: ListView(
+          padding: const EdgeInsets.all(28),
+          shrinkWrap: true,
+          children: [
+            const Icon(Icons.table_restaurant_outlined, size: 48, color: green),
+            const SizedBox(height: 22),
+            const Text(
+              'Welcome back',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800),
             ),
-          ),
+            const SizedBox(height: 8),
+            const Text('Sign in to try your waiter workspace.'),
+            const SizedBox(height: 24),
+            TextField(
+              controller: username,
+              autocorrect: false,
+              decoration: const InputDecoration(labelText: 'Username'),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: password,
+              obscureText: obscure,
+              autocorrect: false,
+              enableSuggestions: false,
+              onSubmitted: (_) => login(),
+              decoration: InputDecoration(
+                labelText: 'Password',
+                suffixIcon: IconButton(
+                  tooltip: obscure ? 'Show password' : 'Hide password',
+                  onPressed: () => setState(() => obscure = !obscure),
+                  icon: Icon(
+                    obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                ),
+              ),
+            ),
+            if (error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(error!, style: const TextStyle(color: Colors.red)),
+              ),
+            const SizedBox(height: 22),
+            FilledButton(
+              onPressed: login,
+              style: FilledButton.styleFrom(
+                backgroundColor: green,
+                minimumSize: const Size.fromHeight(52),
+              ),
+              child: const Text('Sign in to demo'),
+            ),
+            const SizedBox(height: 22),
+            const Text(
+              'LOCAL DEMO · No real payments\nSample data resets when the app restarts. This sign-in is not secure production authentication.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.black54,
+                height: 1.6,
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }
 
 const productAllergenNames = <String, String>{
@@ -660,13 +666,13 @@ class ShineyBrandMark extends StatelessWidget {
   const ShineyBrandMark({super.key, this.size = 36});
   @override
   Widget build(BuildContext context) => Semantics(
-        image: true,
-        label: 'Shiney Gestro logo',
-        child: CustomPaint(
-          size: Size.square(size),
-          painter: const _ShineyBrandPainter(),
-        ),
-      );
+    image: true,
+    label: 'Shiney Gestro logo',
+    child: CustomPaint(
+      size: Size.square(size),
+      painter: const _ShineyBrandPainter(),
+    ),
+  );
 }
 
 class _ShineyBrandPainter extends CustomPainter {
@@ -717,27 +723,27 @@ class ShineyBrand extends StatelessWidget {
   const ShineyBrand({super.key, this.markSize = 36, this.fontSize = 22});
   @override
   Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ShineyBrandMark(size: markSize),
-          const SizedBox(width: 10),
-          Flexible(
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Shiney Gestro',
-                style: GoogleFonts.outfit(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF246B50),
-                  letterSpacing: -.6,
-                ),
-              ),
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      ShineyBrandMark(size: markSize),
+      const SizedBox(width: 10),
+      Flexible(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Shiney Gestro',
+            style: GoogleFonts.outfit(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF246B50),
+              letterSpacing: -.6,
             ),
           ),
-        ],
-      );
+        ),
+      ),
+    ],
+  );
 }
 
 Widget foodLabelSpice(String? diet, int? spice) {
@@ -862,10 +868,10 @@ class Dish {
   }
 
   Color? get ticketColour => kitchenDishColour(
-        id != null && kitchenColoursByDishId.containsKey(id)
-            ? kitchenColoursByDishId[id]
-            : kitchenColor,
-      );
+    id != null && kitchenColoursByDishId.containsKey(id)
+        ? kitchenColoursByDishId[id]
+        : kitchenColor,
+  );
   String? imageUrl; // product photo uploaded in Mission Control
   final int price;
   List<String> path =
@@ -874,21 +880,20 @@ class Dish {
   int? spiceLevel;
   List<String> allergens = const [];
   List<String> get allergenNames => [
-        for (final key in allergens.toSet())
-          if (productAllergenNames.containsKey(key)) productAllergenNames[key]!,
-      ];
+    for (final key in allergens.toSet())
+      if (productAllergenNames.containsKey(key)) productAllergenNames[key]!,
+  ];
   String? kitchenAvailabilityGroupId;
   List<VariationGroup> get kitchenVariations => [
-        for (final g in allVariations)
-          if (g.id == kitchenAvailabilityGroupId) g,
-      ];
-  List<VariationGroup> allVariations =
-      const []; // every variation group of this dish (kitchen/bar can switch options off)
+    for (final g in allVariations)
+      if (g.id == kitchenAvailabilityGroupId) g,
+  ];
+  List<VariationGroup> allVariations = const []; // every variation group of this dish (kitchen/bar can switch options off)
   // Choices shown when the waiter adds this dish: only groups that still have an available option.
   List<VariationGroup> get variations => [
-        for (final g in allVariations)
-          if (g.options.isNotEmpty) g,
-      ];
+    for (final g in allVariations)
+      if (g.options.isNotEmpty) g,
+  ];
   Dish(
     this.name,
     this.category,
@@ -905,10 +910,10 @@ class Dish {
       (drink
           ? 0
           : size == 'Small'
-              ? -200
-              : size == 'Large'
-                  ? 300
-                  : 0);
+          ? -200
+          : size == 'Large'
+          ? 300
+          : 0);
 }
 
 // A set of choices defined once in the admin panel (e.g. Portion, Spice level, Extras) and attached to dishes.
@@ -919,9 +924,9 @@ class VariationGroup {
   final List<VariationOption> allOptions;
   // Options a waiter can pick (the ones not marked sold out).
   List<VariationOption> get options => [
-        for (final o in allOptions)
-          if (o.available) o,
-      ];
+    for (final o in allOptions)
+      if (o.available) o,
+  ];
   VariationGroup(
     this.id,
     this.name, {
@@ -958,7 +963,7 @@ final optionAvailability = <String, bool>{};
 
 // Saves a variation option as sold out / available for the whole restaurant (set after pairing).
 Future<void> Function(String menuItemId, String optionId, bool available)?
-    saveOptionAvailable;
+saveOptionAvailable;
 
 // Replaced with the restaurant's own menu after the tablet is paired.
 var dishes = <Dish>[
@@ -983,7 +988,7 @@ class OrderLine {
   final String note;
   final bool allergy;
   final List<Map<String, dynamic>>
-      choices; // chosen variations: {group, option, price_delta_cents}
+  choices; // chosen variations: {group, option, price_delta_cents}
   OrderLine(
     this.dish,
     this.quantity, {
@@ -1024,7 +1029,8 @@ Future<Map<String, dynamic>> Function(
   String? offerId,
   String? removeItemId,
   List<String>? options,
-})? serviceLoyalty;
+})?
+serviceLoyalty;
 
 class DiningTable {
   final String id;
@@ -1081,11 +1087,10 @@ class DemoRestaurant extends ChangeNotifier {
   final receipts = <List<PaidLine>>[];
   int nextTicket = 100;
   DemoRestaurant({List<String>? tableLabels, bool seed = true})
-      : tables = tableLabels == null
-            ? List.generate(20, (i) => DiningTable(i + 1))
-            : [for (final l in tableLabels) DiningTable.named(l)] {
-    if (!seed)
-      return; // a paired restaurant starts with its real tables and no sample orders
+    : tables = tableLabels == null
+          ? List.generate(20, (i) => DiningTable(i + 1))
+          : [for (final l in tableLabels) DiningTable.named(l)] {
+    if (!seed) return; // a paired restaurant starts with its real tables and no sample orders
     for (final n in [1, 3, 5, 8, 11, 14, 16, 20]) {
       final t = tables[n - 1];
       t.started = DateTime.now().subtract(
@@ -1217,7 +1222,7 @@ class DemoRestaurant extends ChangeNotifier {
         (g) => g.required && g.allOptions.isNotEmpty && g.options.isEmpty,
       );
   void Function(Dish d, bool out)?
-      onSoldOutChanged; // syncs to Supabase when paired
+  onSoldOutChanged; // syncs to Supabase when paired
   void setSoldOut(Dish d, bool out) {
     if (out) {
       soldOut.add(d.name);
@@ -1378,21 +1383,20 @@ class _MenuCategoriesHeader extends SliverPersistentHeaderDelegate {
     BuildContext context,
     double shrinkOffset,
     bool overlapsContent,
-  ) =>
-      Material(
+  ) => Material(
+    color: paper,
+    elevation: overlapsContent ? 3 : 0,
+    shadowColor: const Color(0x18246B50),
+    borderRadius: BorderRadius.circular(24),
+    child: Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
         color: paper,
-        elevation: overlapsContent ? 3 : 0,
-        shadowColor: const Color(0x18246B50),
         borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: paper,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: child,
-        ),
-      );
+      ),
+      child: child,
+    ),
+  );
   @override
   bool shouldRebuild(covariant _MenuCategoriesHeader oldDelegate) =>
       oldDelegate.height != height || oldDelegate.child != child;
@@ -1456,11 +1460,13 @@ class _WaiterDemoState extends State<WaiterDemo> {
         .map((t) => '${t.id}|${t.started?.microsecondsSinceEpoch}')
         .toSet();
     _readyQueueOrder.removeWhere((key, _) => !readyIds.contains(key));
-    for (final t
-        in tables.where((t) => t.active && demoRestaurant.readyCount(t) > 0)) {
+    for (final t in tables.where(
+      (t) => t.active && demoRestaurant.readyCount(t) > 0,
+    )) {
       _readyQueueOrder.putIfAbsent(
-          '${t.id}|${t.started?.microsecondsSinceEpoch}',
-          () => _nextReadyQueueOrder++);
+        '${t.id}|${t.started?.microsecondsSinceEpoch}',
+        () => _nextReadyQueueOrder++,
+      );
     }
     _readySnapshot = next;
     if (arrivals.isEmpty) return removed;
@@ -1468,8 +1474,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
     if (_readyHistory.length > 100)
       _readyHistory.removeRange(100, _readyHistory.length);
     _notificationUnread += arrivals.length;
-    _readyPopupText =
-        arrivals.map((n) => '${n.table} · ${n.count} ready').join(' • ');
+    _readyPopupText = arrivals
+        .map((n) => '${n.table} · ${n.count} ready')
+        .join(' • ');
     _readyPopupVisible = true;
     _readyPopupTimer?.cancel();
     _readyPopupTimer = Timer(const Duration(seconds: 8), () {
@@ -1564,14 +1571,14 @@ class _WaiterDemoState extends State<WaiterDemo> {
                   hasReadyItems
                       ? 'Mark as served'
                       : table == null
-                          ? 'Session ended'
-                          : 'Marked as served',
+                      ? 'Session ended'
+                      : 'Marked as served',
                 ),
                 onPressed: !hasReadyItems
                     ? null
                     : () {
                         // Recheck before updating so old notifications cannot affect a new session.
-                        if (!table!.active ||
+                        if (!table.active ||
                             table.started == null ||
                             table.started!.isAfter(at) ||
                             demoRestaurant.readyCount(table) == 0) {
@@ -1622,66 +1629,100 @@ class _WaiterDemoState extends State<WaiterDemo> {
                 onTap: openReadyNotifications,
                 child: Container(
                   decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [Color(0xFF104332), Color(0xFF07281E)])),
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF104332), Color(0xFF07281E)],
+                    ),
+                  ),
                   padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
-                  child: Row(children: [
-                    ExcludeSemantics(
+                  child: Row(
+                    children: [
+                      ExcludeSemantics(
                         child: Container(
-                            width: 56,
-                            height: 56,
-                            decoration: const BoxDecoration(
-                                color: gold, shape: BoxShape.circle),
-                            child: const Icon(
-                                Icons.notifications_active_rounded,
-                                color: Color(0xFF0B3527),
-                                size: 30))),
-                    const SizedBox(width: 14),
-                    Expanded(
+                          width: 56,
+                          height: 56,
+                          decoration: const BoxDecoration(
+                            color: gold,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.notifications_active_rounded,
+                            color: Color(0xFF0B3527),
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
                         child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                          const Text('Ready to serve',
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Ready to serve',
                               style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800)),
-                          const SizedBox(height: 6),
-                          Text(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
                               _readyPopupText.replaceAll(
-                                  ' ready', ' items ready'),
+                                ' ready',
+                                ' items ready',
+                              ),
                               style: const TextStyle(
-                                  color: Color(0xFFBDD7C8),
-                                  fontSize: 14,
-                                  height: 1.35)),
-                        ])),
-                    const SizedBox(width: 10),
-                    Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 8),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: gold, width: 1.5),
-                            borderRadius: BorderRadius.circular(16)),
-                        child: Text('$count ready',
-                            style: const TextStyle(
-                                color: gold,
+                                color: Color(0xFFBDD7C8),
                                 fontSize: 14,
-                                fontWeight: FontWeight.w700))),
-                    const SizedBox(width: 10),
-                    Container(
-                        width: 1, height: 32, color: const Color(0xFF55705F)),
-                    IconButton(
+                                height: 1.35,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: gold, width: 1.5),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          '$count ready',
+                          style: const TextStyle(
+                            color: gold,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        width: 1,
+                        height: 32,
+                        color: const Color(0xFF55705F),
+                      ),
+                      IconButton(
                         tooltip: 'Dismiss ready notification',
-                        constraints:
-                            const BoxConstraints(minWidth: 48, minHeight: 48),
+                        constraints: const BoxConstraints(
+                          minWidth: 48,
+                          minHeight: 48,
+                        ),
                         onPressed: () {
                           _readyPopupTimer?.cancel();
                           setState(() => _readyPopupVisible = false);
                         },
-                        icon: const Icon(Icons.close_rounded,
-                            color: Colors.white, size: 24)),
-                  ]),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1701,8 +1742,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
       (foodFilter == 'veg'
           ? d.diet == 'veg' || d.diet == 'vegan'
           : foodFilter == 'vegan'
-              ? d.diet == 'vegan'
-              : ['non_veg', 'non-veg', 'nonveg'].contains(d.diet));
+          ? d.diet == 'vegan'
+          : ['non_veg', 'non-veg', 'nonveg'].contains(d.diet));
   String? subCategory; // second level of the category tree
   List<PaidLine> lastReceipt = [];
   // Discount for the payment being collected: 'pct' (percentage), 'fixed' (amount) or 'voucher'.
@@ -1776,30 +1817,30 @@ class _WaiterDemoState extends State<WaiterDemo> {
 
   void message(String text) => showToast(context, text);
   Widget title(String name, [String? subtitle]) => Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              name,
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                color: ink,
-                letterSpacing: -.4,
-              ),
-            ),
-            if (subtitle != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 6),
-                child: Text(
-                  subtitle,
-                  style: const TextStyle(color: sub, fontSize: 13.5),
-                ),
-              ),
-          ],
+    padding: const EdgeInsets.only(bottom: 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          name,
+          style: const TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            color: ink,
+            letterSpacing: -.4,
+          ),
         ),
-      );
+        if (subtitle != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(
+              subtitle,
+              style: const TextStyle(color: sub, fontSize: 13.5),
+            ),
+          ),
+      ],
+    ),
+  );
   Widget button(String text, VoidCallback? action, {bool outline = false}) =>
       SizedBox(
         width: double.infinity,
@@ -1839,56 +1880,56 @@ class _WaiterDemoState extends State<WaiterDemo> {
         ),
       );
   Widget label(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: wSoft,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Color(0xFF1D5A43),
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: wSoft,
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: Color(0xFF1D5A43),
+        fontSize: 11.5,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
   // Section heading, like "Today" in a wallet app.
   Widget heading(String text) => Padding(
-        padding: const EdgeInsets.only(top: 18, bottom: 10),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: ink,
+    padding: const EdgeInsets.only(top: 18, bottom: 10),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: ink,
+      ),
+    ),
+  );
+  Widget amount(String name, int value, {bool strong = false}) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          name,
+          style: TextStyle(
+            color: strong ? ink : sub,
+            fontSize: strong ? 15 : 14,
+            fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
-      );
-  Widget amount(String name, int value, {bool strong = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              name,
-              style: TextStyle(
-                color: strong ? ink : sub,
-                fontSize: strong ? 15 : 14,
-                fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-            Text(
-              money(value),
-              style: TextStyle(
-                color: ink,
-                fontSize: strong ? 22 : 15,
-                fontWeight: strong ? FontWeight.w700 : FontWeight.w600,
-              ),
-            ),
-          ],
+        Text(
+          money(value),
+          style: TextStyle(
+            color: ink,
+            fontSize: strong ? 22 : 15,
+            fontWeight: strong ? FontWeight.w700 : FontWeight.w600,
+          ),
         ),
-      );
+      ],
+    ),
+  );
   Widget stepper(int value, VoidCallback minus, VoidCallback? plus) =>
       Container(
         decoration: BoxDecoration(
@@ -1925,45 +1966,44 @@ class _WaiterDemoState extends State<WaiterDemo> {
       );
   @override
   Widget build(BuildContext context) => Theme(
-        data: walletTheme(),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 900),
-            child: Scaffold(
-              backgroundColor: wCanvas,
-              body: SafeArea(
-                bottom: false,
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: serviceContent()),
-                    Positioned(
-                        top: 8, left: 12, right: 12, child: readyPopup()),
-                  ],
-                ),
+    data: walletTheme(),
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 900),
+        child: Scaffold(
+          backgroundColor: wCanvas,
+          body: SafeArea(
+            bottom: false,
+            child: Stack(
+              children: [
+                Positioned.fill(child: serviceContent()),
+                Positioned(top: 8, left: 12, right: 12, child: readyPopup()),
+              ],
+            ),
+          ),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(8, 6, 12, 10),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: wLine)),
               ),
-              bottomNavigationBar: SafeArea(
-                top: false,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(8, 6, 12, 10),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: wLine)),
-                  ),
-                  child: Row(
-                    children: [
-                      for (var i = 0; i < 3; i++) Expanded(child: navPill(i)),
-                      if (cart.isNotEmpty) ...[
-                        const SizedBox(width: 8),
-                        cartPill(),
-                      ],
-                    ],
-                  ),
-                ),
+              child: Row(
+                children: [
+                  for (var i = 0; i < 3; i++) Expanded(child: navPill(i)),
+                  if (cart.isNotEmpty) ...[
+                    const SizedBox(width: 8),
+                    cartPill(),
+                  ],
+                ],
               ),
             ),
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   // Bottom navigation: icon and label for each section, the open one in green.
   Widget navPill(int index) {
@@ -1980,13 +2020,14 @@ class _WaiterDemoState extends State<WaiterDemo> {
       label: names[index],
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: (_voucherPendingRequest != null ||
+        onTap:
+            (_voucherPendingRequest != null ||
                 _voucherSalePendingRequest != null)
             ? null
             : () => setState(() {
-                  tab = index;
-                  detail = null;
-                }),
+                tab = index;
+                detail = null;
+              }),
         child: SizedBox(
           height: 56,
           child: Column(
@@ -2074,7 +2115,7 @@ class _WaiterDemoState extends State<WaiterDemo> {
     final visible = groups[tableFilter]!;
     if (tableFilter == 'Assigned') {
       final originalOrder = {
-        for (var i = 0; i < visible.length; i++) visible[i]: i
+        for (var i = 0; i < visible.length; i++) visible[i]: i,
       };
       visible.sort((a, b) {
         final aReady = demoRestaurant.readyCount(a) > 0;
@@ -2105,8 +2146,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
     final note = tableFilter == 'Assigned'
         ? '$seated ${seated == 1 ? 'guest' : 'guests'} seated right now'
         : tableFilter == 'Available'
-            ? 'Tap a table to start a session'
-            : 'Guests arriving soon';
+        ? 'Tap a table to start a session'
+        : 'Guests arriving soon';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2218,10 +2259,10 @@ class _WaiterDemoState extends State<WaiterDemo> {
                     final cols = c.maxWidth >= 660
                         ? 5
                         : c.maxWidth >= 500
-                            ? 4
-                            : c.maxWidth >= 400
-                                ? 3
-                                : 2;
+                        ? 4
+                        : c.maxWidth >= 400
+                        ? 3
+                        : 2;
                     return GridView.count(
                       crossAxisCount: cols,
                       childAspectRatio: 1.05,
@@ -2296,8 +2337,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
     return mins >= 1440
         ? '${mins ~/ 1440}d ${(mins % 1440) ~/ 60}h'
         : mins >= 60
-            ? '${mins ~/ 60}h ${mins % 60}m'
-            : '$mins min';
+        ? '${mins ~/ 60}h ${mins % 60}m'
+        : '$mins min';
   }
 
   bool _longSession(DiningTable t) =>
@@ -2322,7 +2363,11 @@ class _WaiterDemoState extends State<WaiterDemo> {
     return Semantics(
       button: true,
       label:
-          'Table ${t.id}, ${t.active ? 'assigned' : reserved ? 'reserved' : 'available'}',
+          'Table ${t.id}, ${t.active
+              ? 'assigned'
+              : reserved
+              ? 'reserved'
+              : 'available'}',
       child: Material(
         color: ready > 0 ? const Color(0xFFFFF8E8) : const Color(0xFFF7F8FA),
         shape: RoundedRectangleBorder(
@@ -2364,10 +2409,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
                   t.active
                       ? '${t.guests} guests'
                       : reserved
-                          ? (t.reservedName.isEmpty
-                              ? 'Reserved'
-                              : t.reservedName)
-                          : 'Available',
+                      ? (t.reservedName.isEmpty ? 'Reserved' : t.reservedName)
+                      : 'Available',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -2381,8 +2424,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
                   t.active
                       ? (ready > 0 ? '$ready ready to serve' : 'Seated $time')
                       : reserved
-                          ? '${t.reservedGuests} guests${t.reservedAt == null ? '' : ', ${hhmm(t.reservedAt!)}'}'
-                          : 'Tap to seat guests',
+                      ? '${t.reservedGuests} guests${t.reservedAt == null ? '' : ', ${hhmm(t.reservedAt!)}'}'
+                      : 'Tap to seat guests',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -2391,8 +2434,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
                     color: ready > 0
                         ? wAmber
                         : _longSession(t)
-                            ? wLong
-                            : sub,
+                        ? wLong
+                        : sub,
                   ),
                 ),
               ],
@@ -2450,88 +2493,129 @@ class _WaiterDemoState extends State<WaiterDemo> {
       child: Material(
         color: const Color(0xFFF7F9F8),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFFDCE6E0))),
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFFDCE6E0)),
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => setState(() => detail = t),
           child: IntrinsicHeight(
-            child:
-                Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
                   flex: 3,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 18),
-                    child: Row(children: [
-                      Container(
+                      horizontal: 14,
+                      vertical: 18,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
                           width: 44,
                           height: 44,
                           decoration: const BoxDecoration(
-                              color: Color(0xFFDCEFE4), shape: BoxShape.circle),
-                          child: const Icon(Icons.table_restaurant_rounded,
-                              color: darkGreen, size: 26)),
-                      const SizedBox(width: 12),
-                      Expanded(
+                            color: Color(0xFFDCEFE4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.table_restaurant_rounded,
+                            color: darkGreen,
+                            size: 26,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
                           child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                            Wrap(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Wrap(
                                 spacing: 8,
                                 runSpacing: 4,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  Text('Table ${t.id}',
-                                      style: const TextStyle(
-                                          color: darkGreen,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700)),
-                                  Text(elapsed,
-                                      style: const TextStyle(
-                                          color: Color(0xFF5D6D66),
-                                          fontSize: 12)),
-                                ]),
-                            const SizedBox(height: 6),
-                            Text('${t.guests} guests',
+                                  Text(
+                                    'Table ${t.id}',
+                                    style: const TextStyle(
+                                      color: darkGreen,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  Text(
+                                    elapsed,
+                                    style: const TextStyle(
+                                      color: Color(0xFF5D6D66),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${t.guests} guests',
                                 style: const TextStyle(
-                                    color: Color(0xFF5D6D66), fontSize: 14)),
-                          ])),
-                    ]),
-                  )),
-              Expanded(
+                                  color: Color(0xFF5D6D66),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
                   flex: 2,
                   child: Ink(
                     color: const Color(0xFFE0F7E8),
                     padding: const EdgeInsets.fromLTRB(10, 14, 10, 14),
-                    child: Row(children: [
-                      Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
                           child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                            Text('$readyN',
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                '$readyN',
                                 style: const TextStyle(
-                                    color: darkGreen,
-                                    fontSize: 36,
-                                    height: 1.05,
-                                    fontWeight: FontWeight.w800)),
-                            const SizedBox(height: 4),
-                            const Text('ready to serve',
+                                  color: darkGreen,
+                                  fontSize: 36,
+                                  height: 1.05,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'ready to serve',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
-                                    color: darkGreen,
-                                    fontSize: 12,
-                                    height: 1.25,
-                                    fontWeight: FontWeight.w700)),
-                          ])),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.chevron_right_rounded,
-                          color: darkGreen, size: 26),
-                    ]),
-                  )),
-            ]),
+                                  color: darkGreen,
+                                  fontSize: 12,
+                                  height: 1.25,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: darkGreen,
+                          size: 26,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2547,8 +2631,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
     final subLine = t.active
         ? '${t.guests} guests, ${readyN > 0 ? '$readyN ready to serve' : 'session running'}'
         : reserved
-            ? '${t.reservedGuests} guests, ${t.reservedAt == null ? 'reserved' : 'arrives ${hhmm(t.reservedAt!)}'}'
-            : 'Available, start a session';
+        ? '${t.reservedGuests} guests, ${t.reservedAt == null ? 'reserved' : 'arrives ${hhmm(t.reservedAt!)}'}'
+        : 'Available, start a session';
     return InkWell(
       onTap: () {
         if (t.active) {
@@ -2588,10 +2672,11 @@ class _WaiterDemoState extends State<WaiterDemo> {
                       color: readyN > 0
                           ? wAmber
                           : reserved
-                              ? wBlue
-                              : sub,
-                      fontWeight:
-                          readyN > 0 ? FontWeight.w600 : FontWeight.w400,
+                          ? wBlue
+                          : sub,
+                      fontWeight: readyN > 0
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                     ),
                   ),
                 ],
@@ -2688,197 +2773,196 @@ class _WaiterDemoState extends State<WaiterDemo> {
 
   // Compact "ordering for" bar once a table is chosen, so the menu gets the space.
   Widget orderBar() => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x1023263A),
-              blurRadius: 16,
-              offset: Offset(0, 4),
-            ),
-          ],
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x1023263A),
+          blurRadius: 16,
+          offset: Offset(0, 4),
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: cart.isEmpty ? chooseOrderTable : null,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
-              child: Row(
-                children: [
-                  walletRound(
-                    orderingTable!.id,
-                    size: 44,
-                    bg: green,
-                    fg: Colors.white,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Ordering for ${orderingTable!.id}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: ink,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          '${orderingTable!.guests} guests${cart.isEmpty ? '' : ', cart in progress'}',
-                          style: const TextStyle(color: sub, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (cart.isEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: wSoft,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Change',
-                            style: TextStyle(
-                              color: green,
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          Icon(Icons.expand_more, size: 18, color: green),
-                        ],
-                      ),
-                    )
-                  else
-                    const Icon(Icons.lock_outline_rounded,
-                        size: 18, color: wMuted),
-                ],
+      ],
+    ),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: cart.isEmpty ? chooseOrderTable : null,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
+          child: Row(
+            children: [
+              walletRound(
+                orderingTable!.id,
+                size: 44,
+                bg: green,
+                fg: Colors.white,
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Ordering for ${orderingTable!.id}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: ink,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '${orderingTable!.guests} guests${cart.isEmpty ? '' : ', cart in progress'}',
+                      style: const TextStyle(color: sub, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              if (cart.isEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: wSoft,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Change',
+                        style: TextStyle(
+                          color: green,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Icon(Icons.expand_more, size: 18, color: green),
+                    ],
+                  ),
+                )
+              else
+                const Icon(Icons.lock_outline_rounded, size: 18, color: wMuted),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget emptyTables() => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-        decoration: BoxDecoration(
-          color: surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.transparent),
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+    decoration: BoxDecoration(
+      color: surface,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.transparent),
+    ),
+    child: Column(
+      children: [
+        Icon(
+          tableFilter == 'Reserved'
+              ? Icons.event_seat_outlined
+              : tableFilter == 'Assigned'
+              ? Icons.people_alt_outlined
+              : Icons.chair_outlined,
+          size: 40,
+          color: green,
         ),
-        child: Column(
-          children: [
-            Icon(
-              tableFilter == 'Reserved'
-                  ? Icons.event_seat_outlined
-                  : tableFilter == 'Assigned'
-                      ? Icons.people_alt_outlined
-                      : Icons.chair_outlined,
-              size: 40,
-              color: green,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              tableFilter == 'Reserved'
-                  ? 'No reserved tables'
-                  : tableFilter == 'Assigned'
-                      ? 'No seated tables'
-                      : 'All tables are in use',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              tableFilter == 'Reserved'
-                  ? 'Hold a free table for guests who are on their way.'
-                  : tableFilter == 'Assigned'
-                      ? 'Seat guests from the Available tab.'
-                      : 'Fully paid tables become available automatically.',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF8E939B), height: 1.4),
-            ),
-            if (tableFilter == 'Reserved') ...[
-              const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: reserveTable,
-                style: FilledButton.styleFrom(backgroundColor: green),
-                icon: const Icon(Icons.add),
-                label: const Text('Reserve a table'),
-              ),
-            ],
-          ],
+        const SizedBox(height: 12),
+        Text(
+          tableFilter == 'Reserved'
+              ? 'No reserved tables'
+              : tableFilter == 'Assigned'
+              ? 'No seated tables'
+              : 'All tables are in use',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
-      );
+        const SizedBox(height: 6),
+        Text(
+          tableFilter == 'Reserved'
+              ? 'Hold a free table for guests who are on their way.'
+              : tableFilter == 'Assigned'
+              ? 'Seat guests from the Available tab.'
+              : 'Fully paid tables become available automatically.',
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Color(0xFF8E939B), height: 1.4),
+        ),
+        if (tableFilter == 'Reserved') ...[
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: reserveTable,
+            style: FilledButton.styleFrom(backgroundColor: green),
+            icon: const Icon(Icons.add),
+            label: const Text('Reserve a table'),
+          ),
+        ],
+      ],
+    ),
+  );
   int get readyTotal => tables
       .where((t) => t.active)
       .fold(0, (n, t) => n + demoRestaurant.readyCount(t));
   Widget readyBanner(List<DiningTable> ready) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Material(
-          color: const Color(0xFFFFF4D6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFFE8B931)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Material(
+      color: const Color(0xFFFFF4D6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE8B931)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
               children: [
-                const Row(
-                  children: [
-                    Icon(Icons.notifications_active, color: Color(0xFF8A6100)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Ready to serve',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF8A6100),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: ready
-                      .map(
-                        (t) => ActionChip(
-                          avatar: const Icon(
-                            Icons.room_service_outlined,
-                            size: 18,
-                            color: green,
-                          ),
-                          label: Text(
-                            '${t.id} · ${demoRestaurant.readyCount(t)} ready',
-                          ),
-                          onPressed: () => setState(() {
-                            detail = t;
-                            tableFilter = 'Assigned';
-                          }),
-                        ),
-                      )
-                      .toList(),
+                Icon(Icons.notifications_active, color: Color(0xFF8A6100)),
+                SizedBox(width: 8),
+                Text(
+                  'Ready to serve',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF8A6100),
+                  ),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: ready
+                  .map(
+                    (t) => ActionChip(
+                      avatar: const Icon(
+                        Icons.room_service_outlined,
+                        size: 18,
+                        color: green,
+                      ),
+                      label: Text(
+                        '${t.id} · ${demoRestaurant.readyCount(t)} ready',
+                      ),
+                      onPressed: () => setState(() {
+                        detail = t;
+                        tableFilter = 'Assigned';
+                      }),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
   String hhmm(DateTime d) =>
       '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
   Future<T?> showSheet<T>(Widget Function(BuildContext, StateSetter) builder) =>
@@ -2924,113 +3008,112 @@ class _WaiterDemoState extends State<WaiterDemo> {
         ),
       );
   Widget sheetHeader(BuildContext context, String name, String subtitle) => Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF1B1D21),
-                    letterSpacing: -.4,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    color: Color(0xFF8E939B),
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
-                ),
-              ],
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B1D21),
+                letterSpacing: -.4,
+              ),
             ),
-          ),
-          IconButton(
-            tooltip: 'Close',
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.close, color: green),
-          ),
-        ],
-      );
+            const SizedBox(height: 6),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                color: Color(0xFF8E939B),
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+      IconButton(
+        tooltip: 'Close',
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.close, color: green),
+      ),
+    ],
+  );
   Widget sectionLabel(String text) => Padding(
-        padding: const EdgeInsets.only(top: 20, bottom: 10),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: green,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.1,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(top: 20, bottom: 10),
+    child: Text(
+      text,
+      style: const TextStyle(
+        color: green,
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.1,
+      ),
+    ),
+  );
   Widget pickChip(String text, bool selected, VoidCallback onTap) => Semantics(
-        button: true,
-        selected: selected,
-        child: Material(
-          color: selected ? green : surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: selected ? green : Colors.transparent),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: selected ? Colors.white : green,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+    button: true,
+    selected: selected,
+    child: Material(
+      color: selected ? green : surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: selected ? green : Colors.transparent),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: selected ? Colors.white : green,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
-      );
+      ),
+    ),
+  );
   Widget tableChoice(String id, bool selected, VoidCallback onTap) => Semantics(
-        button: true,
-        selected: selected,
-        label: 'Table $id',
-        child: Material(
-          color: selected ? green : surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: selected ? green : Colors.transparent),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: onTap,
-            child: Center(
-              child: Text(
-                id,
-                style: TextStyle(
-                  color: selected ? Colors.white : green,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                ),
-              ),
+    button: true,
+    selected: selected,
+    label: 'Table $id',
+    child: Material(
+      color: selected ? green : surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: selected ? green : Colors.transparent),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Center(
+          child: Text(
+            id,
+            style: TextStyle(
+              color: selected ? Colors.white : green,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
             ),
           ),
         ),
-      );
+      ),
+    ),
+  );
   Widget info(IconData icon, String text) => Row(
-        children: [
-          Icon(icon, size: 18, color: green),
-          const SizedBox(width: 8),
-          Flexible(
-            child:
-                Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
-          ),
-        ],
-      );
+    children: [
+      Icon(icon, size: 18, color: green),
+      const SizedBox(width: 8),
+      Flexible(
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
+      ),
+    ],
+  );
   Future<void> reserveTable() async {
     final free = tables.where((t) => !t.active && !t.reserved).toList();
     if (free.isEmpty) {
@@ -3142,7 +3225,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
         chosen == null ||
         !mounted ||
         chosen.active ||
-        chosen.reserved) return;
+        chosen.reserved)
+      return;
     setState(() {
       chosen.reserved = true;
       chosen.reservedName = name;
@@ -3260,7 +3344,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
     if (_loyaltyBusy ||
         !serviceLoyaltyEnabled ||
         serviceLoyalty == null ||
-        !t.active) return;
+        !t.active)
+      return;
     setState(() => _loyaltyBusy = true);
     try {
       String? code;
@@ -3323,9 +3408,11 @@ class _WaiterDemoState extends State<WaiterDemo> {
                 spacing: 6,
                 runSpacing: 6,
                 children: [
-                  for (var n = 0;
-                      n < (t.loyalty['stamp_target'] as int? ?? 10);
-                      n++)
+                  for (
+                    var n = 0;
+                    n < (t.loyalty['stamp_target'] as int? ?? 10);
+                    n++
+                  )
                     Icon(
                       n < (t.loyalty['stamp_balance'] as int? ?? 0)
                           ? Icons.stars_rounded
@@ -3460,17 +3547,18 @@ class _WaiterDemoState extends State<WaiterDemo> {
       for (final id in offer['included_options'] as List? ?? []) '$id',
     };
     final credit = offer['credit_cents'] as int? ?? 0;
-    int difference() => (d.price +
-            d.allVariations.fold<int>(
-              0,
-              (sum, g) =>
-                  sum +
-                  g.allOptions
-                      .where((o) => selected.contains(o.id))
-                      .fold<int>(0, (n, o) => n + o.delta),
-            ) -
-            credit)
-        .clamp(0, 2147483647);
+    int difference() =>
+        (d.price +
+                d.allVariations.fold<int>(
+                  0,
+                  (sum, g) =>
+                      sum +
+                      g.allOptions
+                          .where((o) => selected.contains(o.id))
+                          .fold<int>(0, (n, o) => n + o.delta),
+                ) -
+                credit)
+            .clamp(0, 2147483647);
     final accepted = await showSheet<bool>(
       (ctx, update) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3526,8 +3614,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
           const SizedBox(height: 14),
           button('Use reward & send to ${d.drink ? 'Bar' : 'Kitchen'}', () {
             for (final g in d.variations) {
-              final n =
-                  g.allOptions.where((o) => selected.contains(o.id)).length;
+              final n = g.allOptions
+                  .where((o) => selected.contains(o.id))
+                  .length;
               if ((g.required && n == 0) || (g.max != null && n > g.max!)) {
                 message('Choose valid options for ${g.name}');
                 return;
@@ -3555,9 +3644,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
   }
 
   Widget loyaltyPanel(DiningTable t) => ValueListenableBuilder<bool>(
-        valueListenable: serviceLoyaltyState,
-        builder: (context, enabled, child) => _loyaltyPanelContent(t),
-      );
+    valueListenable: serviceLoyaltyState,
+    builder: (context, enabled, child) => _loyaltyPanelContent(t),
+  );
   Widget _loyaltyPanelContent(DiningTable t) {
     if (!serviceLoyaltyEnabled || serviceLoyalty == null || !t.active)
       return const SizedBox.shrink();
@@ -3596,8 +3685,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
                       Text(
                         attached
                             ? (t.loyalty['stamp_enabled'] == true
-                                ? '${t.loyalty['stamp_balance'] ?? 0} stamps · $ready offers available'
-                                : '$ready coupons available')
+                                  ? '${t.loyalty['stamp_balance'] ?? 0} stamps · $ready offers available'
+                                  : '$ready coupons available')
                             : 'See available offers before ordering',
                         style: const TextStyle(fontSize: 12, color: sub),
                       ),
@@ -3667,60 +3756,60 @@ class _WaiterDemoState extends State<WaiterDemo> {
   bool _pinTableActions = false;
 
   Widget tableDetailActions(DiningTable t) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          loyaltyPanel(t),
-          const SizedBox(height: 18),
-          button(
-            '+ Add items',
-            () => setState(() {
-              orderingTable = t;
-              tab = 1;
-              detail = null;
-            }),
-            outline: true,
-          ),
-          const SizedBox(height: 10),
-          button(
-            'Go to payment →',
-            t.items.any((i) => i.unpaid > 0)
-                ? () => setState(() {
-                      chosenTables
-                        ..clear()
-                        ..add(t);
-                      payQuantities.clear();
-                      tab = 2;
-                      paymentStep = 1;
-                      detail = null;
-                    })
-                : null,
-          ),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      loyaltyPanel(t),
+      const SizedBox(height: 18),
+      button(
+        '+ Add items',
+        () => setState(() {
+          orderingTable = t;
+          tab = 1;
+          detail = null;
+        }),
+        outline: true,
+      ),
+      const SizedBox(height: 10),
+      button(
+        'Go to payment →',
+        t.items.any((i) => i.unpaid > 0)
+            ? () => setState(() {
+                chosenTables
+                  ..clear()
+                  ..add(t);
+                payQuantities.clear();
+                tab = 2;
+                paymentStep = 1;
+                detail = null;
+              })
+            : null,
+      ),
+    ],
+  );
 
   String? _initialPaymentKey;
   bool _pinPaymentSummary = false;
 
   Widget paymentSummaryActions() => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          amount('Pay selected', selectedTotal, strong: true),
-          amount('Remaining after payment', remaining - selectedTotal),
-          const SizedBox(height: 18),
-          button(
-            'Continue to payment · ${money(selectedTotal)} →',
-            selectedUnits == 0
-                ? null
-                : () => setState(() {
-                      clearDiscount();
-                      method = '';
-                      paymentStep = 2;
-                    }),
-          ),
-        ],
-      );
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      amount('Pay selected', selectedTotal, strong: true),
+      amount('Remaining after payment', remaining - selectedTotal),
+      const SizedBox(height: 18),
+      button(
+        'Continue to payment · ${money(selectedTotal)} →',
+        selectedUnits == 0
+            ? null
+            : () => setState(() {
+                clearDiscount();
+                method = '';
+                paymentStep = 2;
+              }),
+      ),
+    ],
+  );
 
   Widget serviceContent() {
     final current = tab == 0 ? detail : null;
@@ -3754,9 +3843,11 @@ class _WaiterDemoState extends State<WaiterDemo> {
     }
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
-        final userStarted = notification is ScrollStartNotification &&
+        final userStarted =
+            notification is ScrollStartNotification &&
             notification.dragDetails != null;
-        final moved = notification is ScrollUpdateNotification &&
+        final moved =
+            notification is ScrollUpdateNotification &&
             (notification.scrollDelta ?? 0) != 0;
         if (notification.depth == 0 &&
             (_pinTableActions || _pinPaymentSummary) &&
@@ -3958,11 +4049,12 @@ class _WaiterDemoState extends State<WaiterDemo> {
         return Padding(
           padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
           child: SizedBox(
-            height: (media.size.height -
-                    media.viewInsets.bottom -
-                    media.padding.top -
-                    24)
-                .clamp(0.0, media.size.height * .78),
+            height:
+                (media.size.height -
+                        media.viewInsets.bottom -
+                        media.padding.top -
+                        24)
+                    .clamp(0.0, media.size.height * .78),
             child: ServiceTablePicker(
               tables: tables,
               initialTable: orderingTable,
@@ -4045,26 +4137,26 @@ class _WaiterDemoState extends State<WaiterDemo> {
   }
 
   Widget soldOutTag() => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFB42318),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const Text(
-          'Sold out',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    decoration: BoxDecoration(
+      color: const Color(0xFFB42318),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: const Text(
+      'Sold out',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+      ),
+    ),
+  );
 
   String dishSubtitle(Dish d) => d.variations.isNotEmpty
       ? d.variations.map((g) => g.name).join(' · ')
       : d.path.length > 1
-          ? d.path.sublist(1).join(' › ')
-          : d.top;
+      ? d.path.sublist(1).join(' › ')
+      : d.top;
 
   Widget dishAllergens(Dish d, {bool detailed = false}) {
     final names = d.allergenNames;
@@ -4339,30 +4431,31 @@ class _WaiterDemoState extends State<WaiterDemo> {
   }
 
   Widget categoryBar(List<String> cats, Map<String, int> counts) => SizedBox(
-        height: 48,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: cats.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
-          itemBuilder: (_, i) {
-            final c = cats[i];
-            return ServiceCategoryChip(
-              label: c,
-              count: counts[c] ?? 0,
-              selected: category == c,
-              onTap: () => setState(() {
-                category = c;
-                subCategory = null;
-              }),
-            );
-          },
-        ),
-      );
+    height: 48,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: cats.length,
+      separatorBuilder: (_, __) => const SizedBox(width: 8),
+      itemBuilder: (_, i) {
+        final c = cats[i];
+        return ServiceCategoryChip(
+          label: c,
+          count: counts[c] ?? 0,
+          selected: category == c,
+          onTap: () => setState(() {
+            category = c;
+            subCategory = null;
+          }),
+        );
+      },
+    ),
+  );
 
   List<Map> availableMenuLoyalty(DiningTable? table) {
     if (!serviceLoyaltyEnabled ||
         table?.active != true ||
-        table!.loyalty['member_id'] == null) return [];
+        table!.loyalty['member_id'] == null)
+      return [];
     return ((table.loyalty['offers'] as List?) ?? []).whereType<Map>().where((
       o,
     ) {
@@ -4376,9 +4469,11 @@ class _WaiterDemoState extends State<WaiterDemo> {
   Widget loyaltyMenuOffer(Map offer) {
     final dish = dishes.firstWhere((d) => d.id == offer['menu_item_id']);
     final credit = offer['credit_cents'] as int? ?? 0;
-    final ids =
-        (offer['included_options'] as List? ?? []).map((id) => '$id').toSet();
-    final normal = dish.price +
+    final ids = (offer['included_options'] as List? ?? [])
+        .map((id) => '$id')
+        .toSet();
+    final normal =
+        dish.price +
         dish.allVariations.fold<int>(
           0,
           (n, g) =>
@@ -4480,7 +4575,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
 
   Widget menuScreen() {
     final loyaltyOffers = availableMenuLoyalty(orderingTable);
-    final hasLoyalty = serviceLoyaltyEnabled &&
+    final hasLoyalty =
+        serviceLoyaltyEnabled &&
         orderingTable?.active == true &&
         orderingTable?.loyalty['member_id'] != null;
     if (category != 'All' &&
@@ -4791,8 +4887,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
                         final cols = c.maxWidth >= 760
                             ? 4
                             : c.maxWidth >= 520
-                                ? 3
-                                : 2;
+                            ? 3
+                            : 2;
                         final w = (c.maxWidth - (cols - 1) * 12) / cols;
                         return GridView.builder(
                           primary: false,
@@ -4801,17 +4897,18 @@ class _WaiterDemoState extends State<WaiterDemo> {
                           itemCount: filtered.length,
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: cols,
-                            mainAxisExtent: w * .78 +
-                                104 +
-                                (filtered.any(
-                                  (d) => d.allergenNames.isNotEmpty,
-                                )
-                                    ? 36
-                                    : 0),
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
+                                crossAxisCount: cols,
+                                mainAxisExtent:
+                                    w * .78 +
+                                    104 +
+                                    (filtered.any(
+                                          (d) => d.allergenNames.isNotEmpty,
+                                        )
+                                        ? 36
+                                        : 0),
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
                           itemBuilder: (_, i) => dishCard(filtered[i]),
                         );
                       },
@@ -4843,15 +4940,11 @@ class _WaiterDemoState extends State<WaiterDemo> {
     };
     String note = '';
     int qty = 1;
-    bool allergy = false;
     String? problem;
     final allergyNoteFocus = FocusNode();
     int unit() =>
         d.price +
         picked.values.expand((s) => s).fold<int>(0, (n, o) => n + o.delta);
-    String chipLabel(VariationOption o) => o.delta == 0
-        ? o.name
-        : '${o.name}  ${o.delta > 0 ? '+' : '−'}${money(o.delta.abs())}';
     void choose(VariationGroup g, VariationOption o, StateSetter update) =>
         update(() {
           final s = picked[g]!;
@@ -4980,8 +5073,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                   side: BorderSide(
-                                    color:
-                                        picked[g]!.contains(o) ? green : wLine,
+                                    color: picked[g]!.contains(o)
+                                        ? green
+                                        : wLine,
                                     width: picked[g]!.contains(o) ? 1.6 : 1,
                                   ),
                                 ),
@@ -4998,12 +5092,12 @@ class _WaiterDemoState extends State<WaiterDemo> {
                                         Icon(
                                           g.multi
                                               ? (picked[g]!.contains(o)
-                                                  ? Icons.check_box
-                                                  : Icons
-                                                      .check_box_outline_blank)
+                                                    ? Icons.check_box
+                                                    : Icons
+                                                          .check_box_outline_blank)
                                               : (picked[g]!.contains(o)
-                                                  ? Icons.radio_button_checked
-                                                  : Icons.radio_button_off),
+                                                    ? Icons.radio_button_checked
+                                                    : Icons.radio_button_off),
                                           color: picked[g]!.contains(o)
                                               ? green
                                               : sub,
@@ -5026,8 +5120,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
                                         Text(
                                           g.multi
                                               ? (o.delta == 0
-                                                  ? 'Included'
-                                                  : '${o.delta > 0 ? '+' : '−'}${money(o.delta.abs())}')
+                                                    ? 'Included'
+                                                    : '${o.delta > 0 ? '+' : '−'}${money(o.delta.abs())}')
                                               : money(d.price + o.delta),
                                           style: TextStyle(
                                             fontSize: 15,
@@ -5064,15 +5158,6 @@ class _WaiterDemoState extends State<WaiterDemo> {
                             if (note.isNotEmpty) problem = null;
                           }),
                           decoration: InputDecoration(
-                            helperText: allergy
-                                ? 'Required: describe the allergy for the kitchen.'
-                                : null,
-                            errorText: allergy &&
-                                    problem ==
-                                        'Describe the allergy in the kitchen note.' &&
-                                    note.trim().isEmpty
-                                ? problem
-                                : null,
                             hintText: d.drink
                                 ? 'No ice, extra lime…'
                                 : 'No onions, sauce on the side…',
@@ -5181,14 +5266,6 @@ class _WaiterDemoState extends State<WaiterDemo> {
                             ),
                           ),
                           onPressed: () {
-                            if (allergy && note.trim().isEmpty) {
-                              update(
-                                () => problem =
-                                    'Describe the allergy in the kitchen note.',
-                              );
-                              allergyNoteFocus.requestFocus();
-                              return;
-                            }
                             final missing = [
                               for (final g in d.variations)
                                 if (g.required && picked[g]!.isEmpty) g.name,
@@ -5221,7 +5298,7 @@ class _WaiterDemoState extends State<WaiterDemo> {
                                   size: summary,
                                   spice: '',
                                   note: note,
-                                  allergy: allergy,
+                                  allergy: false,
                                   unitPrice: unit(),
                                   choices: choices,
                                 ),
@@ -5264,60 +5341,57 @@ class _WaiterDemoState extends State<WaiterDemo> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   ...cart.toList().map(
-                        (i) => Padding(
-                          padding: const EdgeInsets.only(bottom: 18),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    (i) => Padding(
+                      padding: const EdgeInsets.only(bottom: 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            i.dish.name,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          Text(
+                            i.optionsText,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                          if (i.extras.isNotEmpty)
+                            Text(
+                              i.extras,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: i.allergy ? Colors.red.shade700 : green,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                i.dish.name,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700),
-                              ),
-                              Text(
-                                i.optionsText,
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              if (i.extras.isNotEmpty)
-                                Text(
-                                  i.extras,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color:
-                                        i.allergy ? Colors.red.shade700 : green,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(money(i.price * i.quantity)),
-                                  stepper(
-                                    i.quantity,
-                                    () {
-                                      setState(() {
-                                        if (i.quantity == 1) {
-                                          cart.remove(i);
-                                        } else {
-                                          i.quantity--;
-                                        }
-                                      });
-                                      update(() {});
-                                    },
-                                    i.quantity < 99
-                                        ? () {
-                                            setState(() => i.quantity++);
-                                            update(() {});
-                                          }
-                                        : null,
-                                  ),
-                                ],
+                              Text(money(i.price * i.quantity)),
+                              stepper(
+                                i.quantity,
+                                () {
+                                  setState(() {
+                                    if (i.quantity == 1) {
+                                      cart.remove(i);
+                                    } else {
+                                      i.quantity--;
+                                    }
+                                  });
+                                  update(() {});
+                                },
+                                i.quantity < 99
+                                    ? () {
+                                        setState(() => i.quantity++);
+                                        update(() {});
+                                      }
+                                    : null,
                               ),
                             ],
                           ),
-                        ),
+                        ],
                       ),
+                    ),
+                  ),
                   if (cart.isEmpty) const Text('Your cart is empty.'),
                   amount(
                     Charges.enabled
@@ -5393,7 +5467,7 @@ class _WaiterDemoState extends State<WaiterDemo> {
   int get payTax => selectedSubtotal == 0
       ? 0
       : (selectedTax * (selectedSubtotal - discountCents) / selectedSubtotal)
-          .round();
+            .round();
   int get payTotal =>
       (selectedSubtotal - discountCents + payTax - _voucherCredit).clamp(
         0,
@@ -5402,8 +5476,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
   String get discountLabel => discountType == 'pct'
       ? 'Discount ${discountValue == discountValue.roundToDouble() ? discountValue.toStringAsFixed(0) : discountValue}%'
       : discountType == 'voucher'
-          ? 'Voucher ${voucherCode.isEmpty ? '' : voucherCode}'.trim()
-          : 'Discount';
+      ? 'Voucher ${voucherCode.isEmpty ? '' : voucherCode}'.trim()
+      : 'Discount';
   void clearDiscount() {
     discountType = '';
     discountValue = 0;
@@ -5455,92 +5529,92 @@ class _WaiterDemoState extends State<WaiterDemo> {
               ...tables
                   .where((t) => t.active && t.items.any((i) => i.unpaid > 0))
                   .map((t) {
-                final selected = chosenTables.contains(t);
-                return Semantics(
-                  button: true,
-                  selected: selected,
-                  label:
-                      'Table ${t.id}, ${t.guests} guests, ${money(t.balance)}',
-                  child: InkWell(
-                    onTap: () => setState(() {
-                      if (!chosenTables.add(t)) chosenTables.remove(t);
-                      payQuantities.clear();
-                    }),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: const BoxDecoration(
-                        border: Border(bottom: BorderSide(color: wLine)),
-                      ),
-                      child: Row(
-                        children: [
-                          selected
-                              ? walletRound(
-                                  t.id,
-                                  bg: green,
-                                  fg: Colors.white,
-                                )
-                              : walletRound(t.id),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Table ${t.id}',
-                                  style: const TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: ink,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  '${t.guests} guests',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: sub,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    final selected = chosenTables.contains(t);
+                    return Semantics(
+                      button: true,
+                      selected: selected,
+                      label:
+                          'Table ${t.id}, ${t.guests} guests, ${money(t.balance)}',
+                      child: InkWell(
+                        onTap: () => setState(() {
+                          if (!chosenTables.add(t)) chosenTables.remove(t);
+                          payQuantities.clear();
+                        }),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: const BoxDecoration(
+                            border: Border(bottom: BorderSide(color: wLine)),
                           ),
-                          Text(
-                            money(t.balance),
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: ink,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: 26,
-                            height: 26,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: selected ? green : Colors.transparent,
-                              border: selected
-                                  ? null
-                                  : Border.all(
-                                      color: const Color(0xFFB4B9C6),
-                                      width: 2,
+                          child: Row(
+                            children: [
+                              selected
+                                  ? walletRound(
+                                      t.id,
+                                      bg: green,
+                                      fg: Colors.white,
+                                    )
+                                  : walletRound(t.id),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Table ${t.id}',
+                                      style: const TextStyle(
+                                        fontSize: 14.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: ink,
+                                      ),
                                     ),
-                            ),
-                            child: selected
-                                ? const Icon(
-                                    Icons.check_rounded,
-                                    size: 17,
-                                    color: Colors.white,
-                                  )
-                                : null,
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      '${t.guests} guests',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: sub,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text(
+                                money(t.balance),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: ink,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 150),
+                                width: 26,
+                                height: 26,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: selected ? green : Colors.transparent,
+                                  border: selected
+                                      ? null
+                                      : Border.all(
+                                          color: const Color(0xFFB4B9C6),
+                                          width: 2,
+                                        ),
+                                ),
+                                child: selected
+                                    ? const Icon(
+                                        Icons.check_rounded,
+                                        size: 17,
+                                        color: Colors.white,
+                                      )
+                                    : null,
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  }),
               if (!tables.any(
                 (t) => t.active && t.items.any((i) => i.unpaid > 0),
               ))
@@ -5559,9 +5633,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
             chosenTables.isEmpty
                 ? null
                 : () => setState(() {
-                      payQuantities.clear();
-                      paymentStep = 1;
-                    }),
+                    payQuantities.clear();
+                    paymentStep = 1;
+                  }),
           ),
         ],
       );
@@ -5709,8 +5783,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
                                   ),
                                   onPressed: qty < i.unpaid
                                       ? () => setState(
-                                            () => payQuantities[i] = qty + 1,
-                                          )
+                                          () => payQuantities[i] = qty + 1,
+                                        )
                                       : null,
                                 ),
                               ],
@@ -5787,7 +5861,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
     if (voucherReviewOpen ||
         _voucherPaymentBusy ||
         _voucherSaleDraft == null ||
-        !['Cash', 'Card terminal'].contains(method)) return;
+        !['Cash', 'Card terminal'].contains(method))
+      return;
     final draft = Map<String, dynamic>.from(_voucherSaleDraft!),
         selectedMethod = method;
     final value = (draft['amount_cents'] as num).toInt(),
@@ -5907,8 +5982,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
               method.isEmpty
                   ? 'Choose a payment method'
                   : method == 'Cash'
-                      ? 'Review cash payment'
-                      : 'Review card payment',
+                  ? 'Review cash payment'
+                  : 'Review card payment',
             ),
           ),
         ),
@@ -5924,10 +5999,12 @@ class _WaiterDemoState extends State<WaiterDemo> {
   Future<void> completeVoucherSale() async {
     if (_voucherPaymentBusy ||
         submitServiceVoucherSale == null ||
-        makeServiceVoucherRequestId == null) return;
+        makeServiceVoucherRequestId == null)
+      return;
     if (_voucherSalePendingRequest == null) {
       if (_voucherSaleDraft == null ||
-          !['Cash', 'Card terminal'].contains(method)) return;
+          !['Cash', 'Card terminal'].contains(method))
+        return;
       final sale = _voucherSaleDraft!;
       _voucherSalePendingRequest = {
         'p_request': makeServiceVoucherRequestId!(),
@@ -6193,7 +6270,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
     if (_reviewPaymentOpen ||
         _voucherPaymentBusy ||
         paymentStep != 2 ||
-        payQuantities.isEmpty) return;
+        payQuantities.isEmpty)
+      return;
     if (method.isEmpty && payTotal > 0) return;
     if (payQuantities.entries.any(
       (e) => e.value < 1 || e.value > e.key.unpaid,
@@ -6224,8 +6302,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
           paymentMethod: amount == 0
               ? 'No payment due'
               : selectedMethod == 'Card terminal'
-                  ? 'Card'
-                  : selectedMethod,
+              ? 'Card'
+              : selectedMethod,
           amount: money(amount),
           balance: money(balance < 0 ? 0 : balance),
           partial: balance > 0,
@@ -6238,7 +6316,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
         ),
       );
       if (!mounted || approved != true) return;
-      final changed = paymentStep != 2 ||
+      final changed =
+          paymentStep != 2 ||
           method != selectedMethod ||
           payTotal != amount ||
           remaining - selectedTotal != balance ||
@@ -6276,16 +6355,16 @@ class _WaiterDemoState extends State<WaiterDemo> {
           color: on
               ? wSoft
               : needsChoice
-                  ? const Color(0xFFF6FAF7)
-                  : Colors.white,
+              ? const Color(0xFFF6FAF7)
+              : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
             side: BorderSide(
               color: on
                   ? green
                   : needsChoice
-                      ? const Color(0xFFADCDBC)
-                      : wLine,
+                  ? const Color(0xFFADCDBC)
+                  : wLine,
               width: on ? 1.5 : 1,
             ),
           ),
@@ -6345,35 +6424,35 @@ class _WaiterDemoState extends State<WaiterDemo> {
   Widget collectActions() {
     final card = method == 'Card terminal';
     Widget totalRow(String name, int value, {bool strong = false}) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    color: strong ? ink : sub,
-                    fontSize: 13,
-                    fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              name,
+              style: TextStyle(
+                color: strong ? ink : sub,
+                fontSize: 13,
+                fontWeight: strong ? FontWeight.w700 : FontWeight.w500,
               ),
-              const SizedBox(width: 10),
-              Flexible(
-                fit: FlexFit.tight,
-                child: Text(
-                  money(value),
-                  textAlign: TextAlign.end,
-                  style: TextStyle(
-                    color: strong ? green : ink,
-                    fontSize: strong ? 15 : 14,
-                    fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        );
+          const SizedBox(width: 10),
+          Flexible(
+            fit: FlexFit.tight,
+            child: Text(
+              money(value),
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                color: strong ? green : ink,
+                fontSize: strong ? 15 : 14,
+                fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
 
     final hasBreakdown =
         discountCents > 0 || Charges.enabled || _voucherCredit > 0;
@@ -6427,80 +6506,80 @@ class _WaiterDemoState extends State<WaiterDemo> {
                 ),
               )
             : discountCents > 0
-                ? box(
-                    Row(
+            ? box(
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.local_offer_rounded,
+                      color: green,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        '$discountLabel · -${money(discountCents)}',
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: openDiscount,
+                      child: const Text('Change'),
+                    ),
+                    IconButton(
+                      tooltip: 'Remove discount',
+                      onPressed: () => setState(clearDiscount),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                    ),
+                  ],
+                ),
+              )
+            : Material(
+                color: surface,
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
+                  onTap: openDiscount,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: Row(
                       children: [
-                        const Icon(
-                          Icons.local_offer_rounded,
-                          color: green,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '$discountLabel · -${money(discountCents)}',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.local_offer_outlined,
+                            color: green,
+                            size: 20,
                           ),
                         ),
-                        TextButton(
-                          onPressed: openDiscount,
-                          child: const Text('Change'),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Add discount or voucher',
+                            style: TextStyle(
+                              color: ink,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                         ),
-                        IconButton(
-                          tooltip: 'Remove discount',
-                          onPressed: () => setState(clearDiscount),
-                          icon: const Icon(Icons.close_rounded, size: 20),
+                        const Icon(
+                          Icons.chevron_right_rounded,
+                          color: sub,
+                          size: 22,
                         ),
                       ],
                     ),
-                  )
-                : Material(
-                    color: surface,
-                    borderRadius: BorderRadius.circular(20),
-                    child: InkWell(
-                      onTap: openDiscount,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 28,
-                              height: 28,
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.local_offer_outlined,
-                                color: green,
-                                size: 20,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const Expanded(
-                              child: Text(
-                                'Add discount or voucher',
-                                style: TextStyle(
-                                  color: ink,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              color: sub,
-                              size: 22,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ),
+                ),
+              ),
         // 3 · how the person pays: round buttons, like a wallet app.
         Padding(
           padding: const EdgeInsets.only(top: 8, bottom: 6),
@@ -6541,8 +6620,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color:
-                remaining - selectedTotal > 0 ? const Color(0xFFFFF6E7) : wSoft,
+            color: remaining - selectedTotal > 0
+                ? const Color(0xFFFFF6E7)
+                : wSoft,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -6616,12 +6696,12 @@ class _WaiterDemoState extends State<WaiterDemo> {
                     method.isEmpty && payTotal > 0
                         ? 'Choose cash or card'
                         : payTotal == 0
-                            ? 'Review checkout'
-                            : card
-                                ? 'Review card payment, ${money(payTotal)}'
-                                : method == 'Voucher'
-                                    ? 'Review voucher payment'
-                                    : 'Review cash payment, ${money(payTotal)}',
+                        ? 'Review checkout'
+                        : card
+                        ? 'Review card payment, ${money(payTotal)}'
+                        : method == 'Voucher'
+                        ? 'Review voucher payment'
+                        : 'Review cash payment, ${money(payTotal)}',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 15,
@@ -6645,35 +6725,35 @@ class _WaiterDemoState extends State<WaiterDemo> {
   }
 
   Widget methodTile(String m, IconData icon) => Material(
-        color: method == m ? pale : surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: method == m ? green : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => setState(() => method = m),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: Column(
-              children: [
-                Icon(icon, color: method == m ? green : ink, size: 28),
-                const SizedBox(height: 6),
-                Text(
-                  m == 'Card terminal' ? 'Card' : m,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: method == m ? green : ink,
-                  ),
-                ),
-              ],
+    color: method == m ? pale : surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(
+        color: method == m ? green : Colors.transparent,
+        width: 1.5,
+      ),
+    ),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: () => setState(() => method = m),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        child: Column(
+          children: [
+            Icon(icon, color: method == m ? green : ink, size: 28),
+            const SizedBox(height: 6),
+            Text(
+              m == 'Card terminal' ? 'Card' : m,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: method == m ? green : ink,
+              ),
             ),
-          ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 
   // Discount sheet: percentage, fixed amount or voucher.
   Future<void> openDiscount() async {
@@ -6687,64 +6767,63 @@ class _WaiterDemoState extends State<WaiterDemo> {
       final valid =
           value.isFinite && value > 0 && (type != 'pct' || value <= 100);
       Widget option(String key, String text, IconData icon) => Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Material(
-                color: type == key ? pale : surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  side: BorderSide(
-                    color: type == key ? green : Colors.transparent,
-                    width: 1.5,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Material(
+            color: type == key ? pale : surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+              side: BorderSide(
+                color: type == key ? green : Colors.transparent,
+                width: 1.5,
+              ),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () {
+                if (key == 'voucher') {
+                  voucherChosen = true;
+                  Navigator.pop(ctx, false);
+                } else {
+                  update(() {
+                    type = key;
+                    ctl.clear();
+                  });
+                }
+              },
+              child: SizedBox(
+                height: 100,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 14,
                   ),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  onTap: () {
-                    if (key == 'voucher') {
-                      voucherChosen = true;
-                      Navigator.pop(ctx, false);
-                    } else {
-                      update(() {
-                        type = key;
-                        ctl.clear();
-                      });
-                    }
-                  },
-                  child: SizedBox(
-                    height: 100,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 14,
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(icon,
-                              size: 22, color: type == key ? green : ink),
-                          const SizedBox(height: 6),
-                          FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              text,
-                              maxLines: 1,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: type == key ? green : ink,
-                              ),
-                            ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(icon, size: 22, color: type == key ? green : ink),
+                      const SizedBox(height: 6),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          text,
+                          maxLines: 1,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: type == key ? green : ink,
                           ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ),
             ),
-          );
+          ),
+        ),
+      );
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -6762,8 +6841,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             onChanged: (_) => update(() {}),
             decoration: InputDecoration(
-              labelText:
-                  type == 'pct' ? 'Discount in %' : 'Discount amount in Rs.',
+              labelText: type == 'pct'
+                  ? 'Discount in %'
+                  : 'Discount amount in Rs.',
             ),
           ),
           if (type == 'pct' && value > 100)
@@ -6851,8 +6931,9 @@ class _WaiterDemoState extends State<WaiterDemo> {
         } catch (e) {
           if (ctx.mounted)
             update(
-              () => error =
-                  e is VoucherPaymentRejected ? e.message : e.toString(),
+              () => error = e is VoucherPaymentRejected
+                  ? e.message
+                  : e.toString(),
             );
         } finally {
           if (ctx.mounted) update(() => looking = false);
@@ -6980,7 +7061,7 @@ class _WaiterDemoState extends State<WaiterDemo> {
               button(
                 'Apply voucher',
                 partial != null && partial > 0 && partial <= maximum
-                    ? () => apply(partial!)
+                    ? () => apply(partial)
                     : null,
               ),
               button(
@@ -7016,7 +7097,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
       _voucherCredit = credit;
       if (credit == selectedTotal)
         method = 'Voucher';
-      else if (method == 'Voucher') method = '';
+      else if (method == 'Voucher')
+        method = '';
     });
     await showDialog<void>(
       context: context,
@@ -7038,7 +7120,8 @@ class _WaiterDemoState extends State<WaiterDemo> {
   Future<void> completeRealVoucherPayment() async {
     if (_voucherPaymentBusy ||
         submitServiceVoucherPayment == null ||
-        makeServiceVoucherRequestId == null) return;
+        makeServiceVoucherRequestId == null)
+      return;
     if (_voucherPendingRequest == null) {
       if (_realVoucherId == null ||
           _voucherCredit <= 0 ||
@@ -7323,7 +7406,8 @@ class _VoucherScannerPageState extends State<VoucherScannerPage>
         handled ||
         picking ||
         cameraStarting ||
-        scanner.value.isRunning) return;
+        scanner.value.isRunning)
+      return;
     cameraStarting = true;
     try {
       await scanner.start();
@@ -7331,8 +7415,7 @@ class _VoucherScannerPageState extends State<VoucherScannerPage>
     } catch (_) {
       if (mounted)
         setState(
-          () => scanError =
-              'Camera unavailable. Allow camera access in Settings, then try again or enter the code manually.',
+          () => scanError = 'Camera unavailable. Allow camera access in Settings, then try again or enter the code manually.',
         );
     } finally {
       cameraStarting = false;
@@ -7406,8 +7489,7 @@ class _VoucherScannerPageState extends State<VoucherScannerPage>
     } catch (_) {
       if (mounted)
         setState(
-          () => scanError =
-              'Could not read this image. Choose another image or scan with the camera.',
+          () => scanError = 'Could not read this image. Choose another image or scan with the camera.',
         );
     } finally {
       if (mounted && !handled) {
@@ -7470,85 +7552,85 @@ class _VoucherScannerPageState extends State<VoucherScannerPage>
 
   @override
   Widget build(BuildContext context) => Theme(
-        data: walletTheme(),
-        child: Scaffold(
-          backgroundColor: wCanvas,
-          appBar: AppBar(
-            backgroundColor: wCanvas,
-            surfaceTintColor: wCanvas,
-            foregroundColor: ink,
-            centerTitle: true,
-            title: Text(
-              widget.loyalty ? 'Loyalty card' : 'Voucher',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ),
-          body: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 480),
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+    data: walletTheme(),
+    child: Scaffold(
+      backgroundColor: wCanvas,
+      appBar: AppBar(
+        backgroundColor: wCanvas,
+        surfaceTintColor: wCanvas,
+        foregroundColor: ink,
+        centerTitle: true,
+        title: Text(
+          widget.loyalty ? 'Loyalty card' : 'Voucher',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+      ),
+      body: SafeArea(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+              children: [
+                walletCard(
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
                   children: [
-                    walletCard(
-                      padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
-                      children: [
-                        Center(
-                          child: Container(
-                            width: 54,
-                            height: 54,
-                            decoration: const BoxDecoration(
-                              color: wSoft,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              widget.loyalty
-                                  ? Icons.loyalty_outlined
-                                  : Icons.qr_code_scanner_rounded,
-                              color: green,
-                              size: 26,
-                            ),
-                          ),
+                    Center(
+                      child: Container(
+                        width: 54,
+                        height: 54,
+                        decoration: const BoxDecoration(
+                          color: wSoft,
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(height: 14),
-                        Text(
+                        child: Icon(
                           widget.loyalty
-                              ? 'Scan the loyalty card'
-                              : 'Scan the voucher',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: ink,
-                          ),
+                              ? Icons.loyalty_outlined
+                              : Icons.qr_code_scanner_rounded,
+                          color: green,
+                          size: 26,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          widget.loyalty
-                              ? 'Hold the guest\'s QR code inside the frame. Offers show before ordering.'
-                              : 'Hold the voucher QR code inside the frame.',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: sub,
-                            height: 1.4,
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 320),
-                            child: AspectRatio(
-                              aspectRatio: 1,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(24),
-                                child: MobileScanner(
-                                  controller: scanner,
-                                  onDetect: accept,
-                                  errorBuilder: (context, error, child) =>
-                                      ScannerCameraHelp(onRetry: startCamera),
-                                  overlayBuilder: (context, constraints) =>
-                                      IgnorePointer(
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      widget.loyalty
+                          ? 'Scan the loyalty card'
+                          : 'Scan the voucher',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: ink,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.loyalty
+                          ? 'Hold the guest\'s QR code inside the frame. Offers show before ordering.'
+                          : 'Hold the voucher QR code inside the frame.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: sub,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 320),
+                        child: AspectRatio(
+                          aspectRatio: 1,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: MobileScanner(
+                              controller: scanner,
+                              onDetect: accept,
+                              errorBuilder: (context, error, child) =>
+                                  ScannerCameraHelp(onRetry: startCamera),
+                              overlayBuilder: (context, constraints) =>
+                                  IgnorePointer(
                                     child: Padding(
                                       padding: const EdgeInsets.all(26),
                                       child: DecoratedBox(
@@ -7564,77 +7646,76 @@ class _VoucherScannerPageState extends State<VoucherScannerPage>
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 14),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.check_circle_outline,
-                              size: 16,
-                              color: green,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              'Opens automatically when detected',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: green,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.check_circle_outline,
+                          size: 16,
+                          color: green,
                         ),
-                        if (scanError != null)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 10),
-                            child: Text(
-                              'Camera unavailable? Enter the printed code instead.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 12, color: sub),
-                            ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Opens automatically when detected',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: green,
+                            fontWeight: FontWeight.w600,
                           ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 54,
-                      child: FilledButton.icon(
-                        onPressed: picking ? null : enterCode,
-                        icon: const Icon(Icons.keyboard_outlined, size: 20),
-                        label: const Text('Enter code manually'),
-                      ),
-                    ),
-                    if (!kIsWeb) ...[
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        height: 54,
-                        child: OutlinedButton.icon(
-                          onPressed: picking ? null : chooseImage,
-                          icon: const Icon(Icons.photo_library_outlined,
-                              size: 19),
-                          label: Text(
-                            picking ? 'Reading image…' : 'Choose QR image',
-                          ),
+                    if (scanError != null)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: Text(
+                          'Camera unavailable? Enter the printed code instead.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 12, color: sub),
                         ),
                       ),
-                    ],
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Cancel'),
-                    ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 54,
+                  child: FilledButton.icon(
+                    onPressed: picking ? null : enterCode,
+                    icon: const Icon(Icons.keyboard_outlined, size: 20),
+                    label: const Text('Enter code manually'),
+                  ),
+                ),
+                if (!kIsWeb) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 54,
+                    child: OutlinedButton.icon(
+                      onPressed: picking ? null : chooseImage,
+                      icon: const Icon(Icons.photo_library_outlined, size: 19),
+                      label: Text(
+                        picking ? 'Reading image…' : 'Choose QR image',
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 4),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+              ],
             ),
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class ScannerCameraHelp extends StatelessWidget {
@@ -7642,52 +7723,52 @@ class ScannerCameraHelp extends StatelessWidget {
   const ScannerCameraHelp({super.key, required this.onRetry});
   @override
   Widget build(BuildContext context) => Container(
-        color: const Color(0xFFF0F6F2),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: const Icon(
-                Icons.videocam_off_outlined,
-                color: Color(0xFF246B50),
-                size: 24,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Camera access needed',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF22382C),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Allow camera access in your browser or device settings. You can also enter the code manually.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 12,
-                height: 1.35,
-                color: Color(0xFF748078),
-              ),
-            ),
-            const SizedBox(height: 4),
-            TextButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh, size: 17),
-              label: const Text('Try again'),
-            ),
-          ],
+    color: const Color(0xFFF0F6F2),
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: const Icon(
+            Icons.videocam_off_outlined,
+            color: Color(0xFF246B50),
+            size: 24,
+          ),
         ),
-      );
+        const SizedBox(height: 10),
+        const Text(
+          'Camera access needed',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF22382C),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Allow camera access in your browser or device settings. You can also enter the code manually.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            height: 1.35,
+            color: Color(0xFF748078),
+          ),
+        ),
+        const SizedBox(height: 4),
+        TextButton.icon(
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh, size: 17),
+          label: const Text('Try again'),
+        ),
+      ],
+    ),
+  );
 }
 
 // Scanning prepares a voucher charge; payment confirmation activates the credit.
@@ -7749,9 +7830,7 @@ class _ServiceVoucherSalePageState extends State<ServiceVoucherSalePage> {
       if (mounted)
         setState(() {
           manual = true;
-          error = e is VoucherPaymentRejected
-              ? e.message
-              : 'Could not read this voucher. Check the connection or enter its code manually.';
+          error = e is VoucherPaymentRejected ? e.message : 'Could not read this voucher. Check the connection or enter its code manually.';
         });
     } finally {
       if (mounted) setState(() => busy = false);
@@ -7962,7 +8041,7 @@ class _ServiceVoucherSalePageState extends State<ServiceVoucherSalePage> {
                         ),
                       ),
                       Text(
-                        money(balance + (valid ? charge! : 0)),
+                        money(balance + (valid ? charge : 0)),
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           color: green,
@@ -7979,10 +8058,10 @@ class _ServiceVoucherSalePageState extends State<ServiceVoucherSalePage> {
                     onPressed: !valid
                         ? null
                         : () => Navigator.pop(context, {
-                              ...voucher!,
-                              'amount_cents': charge,
-                              'note': noteCtl.text.trim(),
-                            }),
+                            ...voucher!,
+                            'amount_cents': charge,
+                            'note': noteCtl.text.trim(),
+                          }),
                     icon: const Icon(Icons.arrow_forward, size: 20),
                     label: const Text('Continue to payment'),
                   ),
@@ -8062,8 +8141,8 @@ class _VoucherDemoHubState extends State<VoucherDemoHub> {
     page = widget.startScanner
         ? 'scan'
         : table == null
-            ? 'home'
-            : 'sell';
+        ? 'home'
+        : 'sell';
     load();
   }
 
@@ -8154,80 +8233,79 @@ class _VoucherDemoHubState extends State<VoucherDemoHub> {
   }
 
   void go(String next) => setState(() {
-        page = next;
-        error = null;
-      });
+    page = next;
+    error = null;
+  });
   Widget panel(List<Widget> children, {Color? color}) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: color ?? const Color(0xFFF3F5F4),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
-      );
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    margin: const EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      color: color ?? const Color(0xFFF3F5F4),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    ),
+  );
   Widget headingText(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 27,
-            fontWeight: FontWeight.w800,
-            color: green,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 27,
+        fontWeight: FontWeight.w800,
+        color: green,
+      ),
+    ),
+  );
   Widget action(
     String text,
     VoidCallback? onTap, {
     IconData icon = Icons.arrow_forward,
     bool outline = false,
-  }) =>
-      Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: SizedBox(
-          width: double.infinity,
-          child: outline
-              ? OutlinedButton.icon(
-                  onPressed: busy ? null : onTap,
-                  icon: Icon(icon),
-                  label: Text(text),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    foregroundColor: green,
-                  ),
-                )
-              : FilledButton.icon(
-                  onPressed: busy ? null : onTap,
-                  icon: Icon(icon),
-                  label: Text(text),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: green,
-                    minimumSize: const Size.fromHeight(54),
-                  ),
-                ),
-        ),
-      );
-  Widget line(String label, String value, {bool strong = false}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 9),
-        child: Row(
-          children: [
-            Expanded(child: Text(label)),
-            const SizedBox(width: 14),
-            Text(
-              value,
-              style: TextStyle(
-                fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
-                color: strong ? green : null,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: SizedBox(
+      width: double.infinity,
+      child: outline
+          ? OutlinedButton.icon(
+              onPressed: busy ? null : onTap,
+              icon: Icon(icon),
+              label: Text(text),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                foregroundColor: green,
+              ),
+            )
+          : FilledButton.icon(
+              onPressed: busy ? null : onTap,
+              icon: Icon(icon),
+              label: Text(text),
+              style: FilledButton.styleFrom(
+                backgroundColor: green,
+                minimumSize: const Size.fromHeight(54),
               ),
             ),
-          ],
+    ),
+  );
+  Widget line(String label, String value, {bool strong = false}) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 9),
+    child: Row(
+      children: [
+        Expanded(child: Text(label)),
+        const SizedBox(width: 14),
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+            color: strong ? green : null,
+          ),
         ),
-      );
+      ],
+    ),
+  );
   Future<void> scanResult(String code) async {
     final normalized = code.trim().toUpperCase().replaceFirst('DEMO:', '');
     final found = localCards.where((c) => c['code'] == normalized).firstOrNull;
@@ -8387,7 +8465,8 @@ class _VoucherDemoHubState extends State<VoucherDemoHub> {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: reason.text.trim().isEmpty ||
+              onPressed:
+                  reason.text.trim().isEmpty ||
                       cents(balance.text) == null ||
                       (status == 'pending' && cents(balance.text) != 0)
                   ? null
@@ -8413,124 +8492,125 @@ class _VoucherDemoHubState extends State<VoucherDemoHub> {
   }
 
   List<Widget> home() => [
-        headingText('Vouchers'),
-        const Text(
-          'Sell a gift, redeem part of it, or review the restaurant’s voucher activity.',
-        ),
-        const SizedBox(height: 20),
-        action('Sell voucher · no table needed', () {
-          table = null;
-          mealCents = 0;
-          go('sell');
-        }, icon: Icons.card_giftcard),
-        action('Dine-in + voucher purchase', () {
-          table = widget.table ?? 'Demo table T1';
-          mealCents = widget.mealCents > 0 ? widget.mealCents : 350000;
-          go('sell');
-        }, icon: Icons.table_restaurant),
-        action(
-          'Scan and redeem voucher',
-          () => go('scan'),
-          icon: Icons.qr_code_scanner,
-        ),
-        action(
-          'Mission Control · demo preview',
-          () => go('manage'),
-          icon: Icons.dashboard_outlined,
-          outline: true,
-        ),
-        panel([
-          const Text(
-            'Two sales paths',
-            style: TextStyle(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Walk-in: enter voucher value → record payment → issue QR voucher.\n\nDine-in: select the table → add a voucher → review meal + voucher → record payment → activate voucher.',
-          ),
-        ]),
-      ];
+    headingText('Vouchers'),
+    const Text(
+      'Sell a gift, redeem part of it, or review the restaurant’s voucher activity.',
+    ),
+    const SizedBox(height: 20),
+    action('Sell voucher · no table needed', () {
+      table = null;
+      mealCents = 0;
+      go('sell');
+    }, icon: Icons.card_giftcard),
+    action('Dine-in + voucher purchase', () {
+      table = widget.table ?? 'Demo table T1';
+      mealCents = widget.mealCents > 0 ? widget.mealCents : 350000;
+      go('sell');
+    }, icon: Icons.table_restaurant),
+    action(
+      'Scan and redeem voucher',
+      () => go('scan'),
+      icon: Icons.qr_code_scanner,
+    ),
+    action(
+      'Mission Control · demo preview',
+      () => go('manage'),
+      icon: Icons.dashboard_outlined,
+      outline: true,
+    ),
+    panel([
+      const Text(
+        'Two sales paths',
+        style: TextStyle(fontWeight: FontWeight.w800),
+      ),
+      const SizedBox(height: 10),
+      const Text(
+        'Walk-in: enter voucher value → record payment → issue QR voucher.\n\nDine-in: select the table → add a voucher → review meal + voucher → record payment → activate voucher.',
+      ),
+    ]),
+  ];
   List<Widget> scan() => [
-        headingText('Scan voucher'),
-        panel([
-          const Text(
-            'SIMULATED CAMERA PREVIEW',
-            style: TextStyle(fontSize: 11, letterSpacing: 1.4, color: green),
+    headingText('Scan voucher'),
+    panel([
+      const Text(
+        'SIMULATED CAMERA PREVIEW',
+        style: TextStyle(fontSize: 11, letterSpacing: 1.4, color: green),
+      ),
+      const SizedBox(height: 20),
+      Center(
+        child: Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: green, width: 3),
+            borderRadius: BorderRadius.circular(22),
           ),
-          const SizedBox(height: 20),
-          Center(
-            child: Container(
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: green, width: 3),
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: const Column(
-                children: [
-                  ShineyBrand(markSize: 28, fontSize: 20),
-                  SizedBox(height: 12),
-                  Icon(Icons.qr_code_2, size: 150, color: green),
-                  Text('GIFT VOUCHER · DEMO'),
-                ],
-              ),
-            ),
+          child: const Column(
+            children: [
+              ShineyBrand(markSize: 28, fontSize: 20),
+              SizedBox(height: 12),
+              Icon(Icons.qr_code_2, size: 150, color: green),
+              Text('GIFT VOUCHER · DEMO'),
+            ],
           ),
-          const SizedBox(height: 20),
-          const Text(
-            'Point the camera at the voucher QR code.',
-            textAlign: TextAlign.center,
-          ),
-        ], color: const Color(0xFFE4F3EB)),
-        if (localCards.any((c) => c['status'] == 'active'))
-          DropdownButtonFormField<String>(
-            value: localCards
-                    .where((c) => c['status'] == 'active')
-                    .any((c) => c['code'] == selectedCode)
-                ? selectedCode
-                : null,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Demo voucher to detect',
-              border: OutlineInputBorder(),
-            ),
-            items: localCards
+        ),
+      ),
+      const SizedBox(height: 20),
+      const Text(
+        'Point the camera at the voucher QR code.',
+        textAlign: TextAlign.center,
+      ),
+    ], color: const Color(0xFFE4F3EB)),
+    if (localCards.any((c) => c['status'] == 'active'))
+      DropdownButtonFormField<String>(
+        value:
+            localCards
                 .where((c) => c['status'] == 'active')
-                .map(
-                  (c) => DropdownMenuItem<String>(
-                    value: c['code'] as String,
-                    child: Text(
-                      (c['code'] as String) + ' · ' + rs(c['balance'] as int),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                )
-                .toList(),
-            onChanged: (v) => setState(() => selectedCode = v),
-          ),
-        const SizedBox(height: 16),
-        action(
-          'Simulate QR detected',
-          localCards.any((c) => c['status'] == 'active')
-              ? () => scanResult(
-                    selectedCode ??
-                        localCards.firstWhere(
-                            (c) => c['status'] == 'active')['code'] as String,
-                  )
-              : null,
-          icon: Icons.qr_code_scanner,
+                .any((c) => c['code'] == selectedCode)
+            ? selectedCode
+            : null,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Demo voucher to detect',
+          border: OutlineInputBorder(),
         ),
-        action(
-          'Use in-app camera / choose QR image',
-          useCamera,
-          icon: Icons.photo_library_outlined,
-          outline: true,
-        ),
-        const Text(
-          'For a real test image, encode DEMO:SG-1048. The decorative QR above is only a simulation.',
-          style: TextStyle(fontSize: 12, color: Colors.black54),
-        ),
-      ];
+        items: localCards
+            .where((c) => c['status'] == 'active')
+            .map(
+              (c) => DropdownMenuItem<String>(
+                value: c['code'] as String,
+                child: Text(
+                  (c['code'] as String) + ' · ' + rs(c['balance'] as int),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
+            .toList(),
+        onChanged: (v) => setState(() => selectedCode = v),
+      ),
+    const SizedBox(height: 16),
+    action(
+      'Simulate QR detected',
+      localCards.any((c) => c['status'] == 'active')
+          ? () => scanResult(
+              selectedCode ??
+                  localCards.firstWhere((c) => c['status'] == 'active')['code']
+                      as String,
+            )
+          : null,
+      icon: Icons.qr_code_scanner,
+    ),
+    action(
+      'Use in-app camera / choose QR image',
+      useCamera,
+      icon: Icons.photo_library_outlined,
+      outline: true,
+    ),
+    const Text(
+      'For a real test image, encode DEMO:SG-1048. The decorative QR above is only a simulation.',
+      style: TextStyle(fontSize: 12, color: Colors.black54),
+    ),
+  ];
   List<Widget> redeemScreen() {
     final c = card!;
     final balance = c['balance'] as int;
@@ -8609,227 +8689,221 @@ class _VoucherDemoHubState extends State<VoucherDemoHub> {
   }
 
   List<Widget> success() => [
-        const Center(child: Icon(Icons.check_circle, size: 82, color: green)),
-        const SizedBox(height: 24),
-        headingText(rs(redeemed) + ' redeemed'),
-        const Text('Applied to this demo bill'),
-        const SizedBox(height: 24),
-        panel([
-          Text('Voucher ' + selectedCode!),
-          const SizedBox(height: 14),
-          const Text('Remaining balance'),
-          Text(
-            rs(card!['balance'] as int),
-            style: const TextStyle(
-              fontSize: 38,
-              fontWeight: FontWeight.w800,
-              color: green,
-            ),
-          ),
-        ], color: const Color(0xFFE4F3EB)),
-        panel([
-          line('Previous balance', rs(previous)),
-          line('Redeemed today', '− ' + rs(redeemed)),
-          line('New balance', rs(card!['balance'] as int), strong: true),
-        ]),
-        const Text('Keep this card. Scan the same QR next time.'),
-        const SizedBox(height: 22),
-        action(
-          'Back to payment',
-          () => Navigator.pop(context),
-          icon: Icons.payments_outlined,
+    const Center(child: Icon(Icons.check_circle, size: 82, color: green)),
+    const SizedBox(height: 24),
+    headingText(rs(redeemed) + ' redeemed'),
+    const Text('Applied to this demo bill'),
+    const SizedBox(height: 24),
+    panel([
+      Text('Voucher ' + selectedCode!),
+      const SizedBox(height: 14),
+      const Text('Remaining balance'),
+      Text(
+        rs(card!['balance'] as int),
+        style: const TextStyle(
+          fontSize: 38,
+          fontWeight: FontWeight.w800,
+          color: green,
         ),
-        action('Scan the same voucher again', () => go('scan'), outline: true),
-        action(
-          'View recorded activity',
-          () => go('manage'),
-          outline: true,
-          icon: Icons.history,
-        ),
-      ];
+      ),
+    ], color: const Color(0xFFE4F3EB)),
+    panel([
+      line('Previous balance', rs(previous)),
+      line('Redeemed today', '− ' + rs(redeemed)),
+      line('New balance', rs(card!['balance'] as int), strong: true),
+    ]),
+    const Text('Keep this card. Scan the same QR next time.'),
+    const SizedBox(height: 22),
+    action(
+      'Back to payment',
+      () => Navigator.pop(context),
+      icon: Icons.payments_outlined,
+    ),
+    action('Scan the same voucher again', () => go('scan'), outline: true),
+    action(
+      'View recorded activity',
+      () => go('manage'),
+      outline: true,
+      icon: Icons.history,
+    ),
+  ];
   List<Widget> sellScreen() => [
-        headingText(
-            table == null ? 'Sell a voucher' : 'Add voucher to ' + table!),
-        panel([
-          Text(
-            table == null
-                ? 'Walk-in purchase · no table required'
-                : 'Dine-in purchase · ' + table!,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            table == null
-                ? 'Collect payment before issuing the voucher.'
-                : 'The voucher stays inactive until the table’s payment is recorded.',
-          ),
-        ]),
-        TextField(
-          controller: saleAmount,
-          onChanged: (_) => setState(() {}),
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(
-            labelText: 'Voucher value',
-            prefixText: 'Rs. ',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: recipient,
-          decoration: const InputDecoration(
-            labelText: 'Recipient name (optional)',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 16),
-        if (table == null) methodPicker(),
-        const SizedBox(height: 16),
-        action(
-          table == null
-              ? 'Record demo payment & issue voucher'
-              : 'Add voucher to demo table bill',
-          (cents(saleAmount.text) ?? 0) > 0
-              ? () => sell(defer: table != null)
-              : null,
-          icon: Icons.card_giftcard,
-        ),
-      ];
+    headingText(table == null ? 'Sell a voucher' : 'Add voucher to ' + table!),
+    panel([
+      Text(
+        table == null
+            ? 'Walk-in purchase · no table required'
+            : 'Dine-in purchase · ' + table!,
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+      const SizedBox(height: 8),
+      Text(
+        table == null ? 'Collect payment before issuing the voucher.' : 'The voucher stays inactive until the table’s payment is recorded.',
+      ),
+    ]),
+    TextField(
+      controller: saleAmount,
+      onChanged: (_) => setState(() {}),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      decoration: const InputDecoration(
+        labelText: 'Voucher value',
+        prefixText: 'Rs. ',
+        border: OutlineInputBorder(),
+      ),
+    ),
+    const SizedBox(height: 16),
+    TextField(
+      controller: recipient,
+      decoration: const InputDecoration(
+        labelText: 'Recipient name (optional)',
+        border: OutlineInputBorder(),
+      ),
+    ),
+    const SizedBox(height: 16),
+    if (table == null) methodPicker(),
+    const SizedBox(height: 16),
+    action(
+      table == null
+          ? 'Record demo payment & issue voucher'
+          : 'Add voucher to demo table bill',
+      (cents(saleAmount.text) ?? 0) > 0
+          ? () => sell(defer: table != null)
+          : null,
+      icon: Icons.card_giftcard,
+    ),
+  ];
   Widget methodPicker() => DropdownButtonFormField<String>(
-        value: payment,
-        decoration: const InputDecoration(
-          labelText: 'Payment method',
-          border: OutlineInputBorder(),
-        ),
-        items: const [
-          DropdownMenuItem(value: 'Cash', child: Text('Cash')),
-          DropdownMenuItem(
-              value: 'Card terminal', child: Text('Card terminal')),
-        ],
-        onChanged: (v) => setState(() => payment = v!),
-      );
+    value: payment,
+    decoration: const InputDecoration(
+      labelText: 'Payment method',
+      border: OutlineInputBorder(),
+    ),
+    items: const [
+      DropdownMenuItem(value: 'Cash', child: Text('Cash')),
+      DropdownMenuItem(value: 'Card terminal', child: Text('Card terminal')),
+    ],
+    onChanged: (v) => setState(() => payment = v!),
+  );
   List<Widget> tableBill() => [
-        headingText('Review table bill'),
-        panel([
-          Text(card!['table'] as String? ?? 'Table'),
-          line('Meal balance (demo)', rs(mealCents)),
-          line('Gift voucher', rs(card!['initial'] as int)),
-          const Divider(),
-          line(
-            'Total to collect',
-            rs(mealCents + (card!['initial'] as int)),
-            strong: true,
-          ),
-        ]),
-        methodPicker(),
-        const SizedBox(height: 20),
-        const Text(
-          'The gift voucher is not sent to the kitchen. It activates only after this simulated payment.',
-        ),
-        const SizedBox(height: 20),
-        action(
-          'Record demo payment & activate',
-          payTable,
-          icon: Icons.check_circle_outline,
-        ),
-        action('Keep pending · pay later', () => go('home'), outline: true),
-      ];
+    headingText('Review table bill'),
+    panel([
+      Text(card!['table'] as String? ?? 'Table'),
+      line('Meal balance (demo)', rs(mealCents)),
+      line('Gift voucher', rs(card!['initial'] as int)),
+      const Divider(),
+      line(
+        'Total to collect',
+        rs(mealCents + (card!['initial'] as int)),
+        strong: true,
+      ),
+    ]),
+    methodPicker(),
+    const SizedBox(height: 20),
+    const Text(
+      'The gift voucher is not sent to the kitchen. It activates only after this simulated payment.',
+    ),
+    const SizedBox(height: 20),
+    action(
+      'Record demo payment & activate',
+      payTable,
+      icon: Icons.check_circle_outline,
+    ),
+    action('Keep pending · pay later', () => go('home'), outline: true),
+  ];
   List<Widget> issued() => [
-        const Center(child: Icon(Icons.check_circle, size: 76, color: green)),
-        const SizedBox(height: 20),
-        headingText('Voucher ready'),
-        panel([
-          Text('Voucher ' + selectedCode!),
-          const SizedBox(height: 12),
-          Text(
-            rs(card!['balance'] as int),
-            style: const TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.w800,
-              color: green,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text('Active · demo payment recorded'),
-          const SizedBox(height: 18),
-          const Center(child: Icon(Icons.qr_code_2, size: 150, color: green)),
-          const Text('Illustrative QR · use this code in the simulator:'),
-          SelectableText(
-            'DEMO:' + selectedCode!,
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-        ], color: const Color(0xFFE4F3EB)),
-        action('Sell another voucher', () => go('sell'), icon: Icons.add),
-        action(
-          'View activity',
-          () => go('manage'),
-          outline: true,
-          icon: Icons.history,
+    const Center(child: Icon(Icons.check_circle, size: 76, color: green)),
+    const SizedBox(height: 20),
+    headingText('Voucher ready'),
+    panel([
+      Text('Voucher ' + selectedCode!),
+      const SizedBox(height: 12),
+      Text(
+        rs(card!['balance'] as int),
+        style: const TextStyle(
+          fontSize: 36,
+          fontWeight: FontWeight.w800,
+          color: green,
         ),
-      ];
+      ),
+      const SizedBox(height: 10),
+      const Text('Active · demo payment recorded'),
+      const SizedBox(height: 18),
+      const Center(child: Icon(Icons.qr_code_2, size: 150, color: green)),
+      const Text('Illustrative QR · use this code in the simulator:'),
+      SelectableText(
+        'DEMO:' + selectedCode!,
+        style: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+    ], color: const Color(0xFFE4F3EB)),
+    action('Sell another voucher', () => go('sell'), icon: Icons.add),
+    action(
+      'View activity',
+      () => go('manage'),
+      outline: true,
+      icon: Icons.history,
+    ),
+  ];
   List<Widget> manage() => [
-        headingText('Mission Control'),
-        const Text('Vouchers · restaurant manager preview'),
-        const SizedBox(height: 20),
-        for (final c in localCards)
-          panel([
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    c['code'] as String,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                ),
-                Text(c['status'] as String,
-                    style: const TextStyle(color: green)),
-              ],
+    headingText('Mission Control'),
+    const Text('Vouchers · restaurant manager preview'),
+    const SizedBox(height: 20),
+    for (final c in localCards)
+      panel([
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                c['code'] as String,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
             ),
-            line('Balance', rs(c['balance'] as int), strong: true),
-            if ((c['recipient'] as String).isNotEmpty)
-              Text(c['recipient'] as String),
-            if (c['table'] != null) Text('Table: ' + (c['table'] as String)),
-            const SizedBox(height: 12),
-            action(
-              'Edit details / adjust balance',
-              () => editCard(c),
-              outline: true,
-              icon: Icons.edit_outlined,
-            ),
-            if (c['status'] == 'pending')
-              action('Complete table payment', () {
-                selectedCode = c['code'] as String;
-                table = c['table'] as String?;
-                mealCents = (c['mealCents'] as int?) ?? 0;
-                go('tableBill');
-              }, icon: Icons.payments_outlined),
-          ]),
-        headingText('Activity history'),
-        if (!activity.any((a) => a['restaurant'] == restaurant))
-          const Text(
-              'No activity yet. Try selling or redeeming a demo voucher.'),
-        for (final a in activity.where((a) => a['restaurant'] == restaurant))
-          panel([
-            Text(
-              (a['event'] as String) + ' · ' + (a['code'] as String),
-              style: const TextStyle(fontWeight: FontWeight.w800),
-            ),
-            line(
-              'Change',
-              ((a['delta'] as int) >= 0 ? '+ ' : '− ') +
-                  rs((a['delta'] as int).abs()),
-            ),
-            line('Balance after', rs(a['balance'] as int)),
-            Text(a['reason'] as String),
-            const SizedBox(height: 8),
-            Text(
-              (a['actor'] as String) +
-                  ' · ' +
-                  (a['at'] as String).replaceFirst('T', ' ').substring(0, 19),
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
-            ),
-          ]),
-      ];
+            Text(c['status'] as String, style: const TextStyle(color: green)),
+          ],
+        ),
+        line('Balance', rs(c['balance'] as int), strong: true),
+        if ((c['recipient'] as String).isNotEmpty)
+          Text(c['recipient'] as String),
+        if (c['table'] != null) Text('Table: ' + (c['table'] as String)),
+        const SizedBox(height: 12),
+        action(
+          'Edit details / adjust balance',
+          () => editCard(c),
+          outline: true,
+          icon: Icons.edit_outlined,
+        ),
+        if (c['status'] == 'pending')
+          action('Complete table payment', () {
+            selectedCode = c['code'] as String;
+            table = c['table'] as String?;
+            mealCents = (c['mealCents'] as int?) ?? 0;
+            go('tableBill');
+          }, icon: Icons.payments_outlined),
+      ]),
+    headingText('Activity history'),
+    if (!activity.any((a) => a['restaurant'] == restaurant))
+      const Text('No activity yet. Try selling or redeeming a demo voucher.'),
+    for (final a in activity.where((a) => a['restaurant'] == restaurant))
+      panel([
+        Text(
+          (a['event'] as String) + ' · ' + (a['code'] as String),
+          style: const TextStyle(fontWeight: FontWeight.w800),
+        ),
+        line(
+          'Change',
+          ((a['delta'] as int) >= 0 ? '+ ' : '− ') +
+              rs((a['delta'] as int).abs()),
+        ),
+        line('Balance after', rs(a['balance'] as int)),
+        Text(a['reason'] as String),
+        const SizedBox(height: 8),
+        Text(
+          (a['actor'] as String) +
+              ' · ' +
+              (a['at'] as String).replaceFirst('T', ' ').substring(0, 19),
+          style: const TextStyle(fontSize: 12, color: Colors.black54),
+        ),
+      ]),
+  ];
   @override
   void dispose() {
     amount.dispose();
@@ -8840,91 +8914,91 @@ class _VoucherDemoHubState extends State<VoucherDemoHub> {
 
   @override
   Widget build(BuildContext context) => PopScope(
-        canPop: !busy,
-        child: Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            title: const ShineyBrand(markSize: 28, fontSize: 20),
-            actions: [
-              IconButton(
-                tooltip: 'Voucher home',
-                onPressed: busy ? null : () => go('home'),
-                icon: const Icon(Icons.home_outlined),
-              ),
-            ],
+    canPop: !busy,
+    child: Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const ShineyBrand(markSize: 28, fontSize: 20),
+        actions: [
+          IconButton(
+            tooltip: 'Voucher home',
+            onPressed: busy ? null : () => go('home'),
+            icon: const Icon(Icons.home_outlined),
           ),
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: loading
-                  ? const Center(child: ShineyLoadingIndicator())
-                  : ListView(
-                      padding: const EdgeInsets.all(20),
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          margin: const EdgeInsets.only(bottom: 18),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFF3D6),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            'SIMULATED DEMO · saved only on this device\nNo real payments or restaurant records are changed.',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ),
-                        if (page == 'home' || page == 'manage') ...[
-                          DropdownButtonFormField<String>(
-                            value: restaurant,
-                            decoration: const InputDecoration(
-                              labelText: 'Demo restaurant',
-                              border: OutlineInputBorder(),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'Demo Bistro',
-                                child: Text('Demo Bistro'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'Demo Café',
-                                child: Text('Demo Café'),
-                              ),
-                            ],
-                            onChanged: busy
-                                ? null
-                                : (v) => setState(() {
-                                      restaurant = v!;
-                                      selectedCode = null;
-                                      error = null;
-                                    }),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                        if (error != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Text(
-                              error!,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        if (busy) const LinearProgressIndicator(),
-                        ...switch (page) {
-                          'scan' => scan(),
-                          'redeem' => redeemScreen(),
-                          'success' => success(),
-                          'sell' => sellScreen(),
-                          'tableBill' => tableBill(),
-                          'issued' => issued(),
-                          'manage' => manage(),
-                          _ => home(),
-                        },
-                      ],
+        ],
+      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: loading
+              ? const Center(child: ShineyLoadingIndicator())
+              : ListView(
+                  padding: const EdgeInsets.all(20),
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      margin: const EdgeInsets.only(bottom: 18),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3D6),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        'SIMULATED DEMO · saved only on this device\nNo real payments or restaurant records are changed.',
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ),
-            ),
-          ),
+                    if (page == 'home' || page == 'manage') ...[
+                      DropdownButtonFormField<String>(
+                        value: restaurant,
+                        decoration: const InputDecoration(
+                          labelText: 'Demo restaurant',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Demo Bistro',
+                            child: Text('Demo Bistro'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Demo Café',
+                            child: Text('Demo Café'),
+                          ),
+                        ],
+                        onChanged: busy
+                            ? null
+                            : (v) => setState(() {
+                                restaurant = v!;
+                                selectedCode = null;
+                                error = null;
+                              }),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    if (error != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Text(
+                          error!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    if (busy) const LinearProgressIndicator(),
+                    ...switch (page) {
+                      'scan' => scan(),
+                      'redeem' => redeemScreen(),
+                      'success' => success(),
+                      'sell' => sellScreen(),
+                      'tableBill' => tableBill(),
+                      'issued' => issued(),
+                      'manage' => manage(),
+                      _ => home(),
+                    },
+                  ],
+                ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class LoyaltyRegistrationSheet extends StatefulWidget {
@@ -8958,73 +9032,70 @@ class _LoyaltyRegistrationSheetState extends State<LoyaltyRegistrationSheet> {
     TextCapitalization capitalization = TextCapitalization.none,
     String? Function(String?)? validate,
     TextInputAction action = TextInputAction.next,
-  }) =>
-      Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF344C40),
-              ),
-            ),
-            const SizedBox(height: 7),
-            TextFormField(
-              controller: ctl,
-              keyboardType: keyboard,
-              textCapitalization: capitalization,
-              textInputAction: action,
-              validator: validate,
-              autocorrect: keyboard == null,
-              style: const TextStyle(fontSize: 15, color: Color(0xFF243A2E)),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle:
-                    const TextStyle(color: Color(0xFF99A49C), fontSize: 14),
-                prefixIcon:
-                    Icon(icon, color: const Color(0xFF71897A), size: 20),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 16,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFDEE7DF)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFDEE7DF)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF246B50),
-                    width: 1.6,
-                  ),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFC43C32)),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(
-                    color: Color(0xFFC43C32),
-                    width: 1.6,
-                  ),
-                ),
-                errorMaxLines: 2,
-              ),
-            ),
-          ],
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF344C40),
+          ),
         ),
-      );
+        const SizedBox(height: 7),
+        TextFormField(
+          controller: ctl,
+          keyboardType: keyboard,
+          textCapitalization: capitalization,
+          textInputAction: action,
+          validator: validate,
+          autocorrect: keyboard == null,
+          style: const TextStyle(fontSize: 15, color: Color(0xFF243A2E)),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: const TextStyle(color: Color(0xFF99A49C), fontSize: 14),
+            prefixIcon: Icon(icon, color: const Color(0xFF71897A), size: 20),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 16,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFDEE7DF)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFDEE7DF)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFF246B50),
+                width: 1.6,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFC43C32)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: Color(0xFFC43C32),
+                width: 1.6,
+              ),
+            ),
+            errorMaxLines: 2,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Future<void> pickBirth() async {
     FocusScope.of(context).unfocus();
@@ -9060,307 +9131,306 @@ class _LoyaltyRegistrationSheetState extends State<LoyaltyRegistrationSheet> {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding:
-            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: SafeArea(
-          top: false,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: (MediaQuery.of(context).size.height * .92 -
+    padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+    child: SafeArea(
+      top: false,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight:
+              (MediaQuery.of(context).size.height * .92 -
                       MediaQuery.of(context).viewInsets.bottom)
                   .clamp(160.0, double.infinity),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD8E0D8),
+                borderRadius: BorderRadius.circular(3),
+              ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 10),
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD8E0D8),
-                    borderRadius: BorderRadius.circular(3),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 14, 12, 12),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text(
+                      'Activate loyalty card',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -.5,
+                        color: Color(0xFF1D3527),
+                      ),
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(22, 14, 12, 12),
-                  child: Row(
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    tooltip: 'Close registration',
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: Color(0xFF55735F),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
+                child: Form(
+                  key: _form,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Expanded(
-                        child: Text(
-                          'Activate loyalty card',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -.5,
-                            color: Color(0xFF1D3527),
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF14583E), Color(0xFF2F7857)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFCF2C9),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.card_giftcard_rounded,
+                                color: Color(0xFF936B25),
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'A little loyalty. More rewards.',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    'Add the guest’s details to activate this card.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFD5E8D7),
+                                      height: 1.45,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      const Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Guest details',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF243B2D),
+                              ),
+                            ),
+                          ),
+                          Text(
+                            'All fields required',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF7C8B7F),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      field(
+                        'Full name',
+                        'e.g. Alex Perera',
+                        Icons.person_outline_rounded,
+                        _name,
+                        capitalization: TextCapitalization.words,
+                        validate: (v) => (v?.trim().isEmpty ?? true)
+                            ? 'Enter the guest’s name'
+                            : (v!.trim().length > 120
+                                  ? 'Use 120 characters or fewer'
+                                  : null),
+                      ),
+                      field(
+                        'Phone number',
+                        'e.g. +94 77 123 4567',
+                        Icons.phone_outlined,
+                        _phone,
+                        keyboard: TextInputType.phone,
+                        validate: (v) =>
+                            (v?.trim().length ?? 0) < 5 ||
+                                (v?.trim().length ?? 0) > 40
+                            ? 'Enter a valid phone number'
+                            : null,
+                      ),
+                      field(
+                        'Email address',
+                        'guest@example.com',
+                        Icons.alternate_email_rounded,
+                        _email,
+                        keyboard: TextInputType.emailAddress,
+                        action: TextInputAction.done,
+                        validate: (v) =>
+                            !RegExp(r'^[^ @]+@[^ @]+\.[^ @]+$')
+                                    .hasMatch(v?.trim() ?? '') ||
+                                (v?.trim().length ?? 0) > 254
+                            ? 'Enter a valid email address'
+                            : null,
+                      ),
+                      const Text(
+                        'Date of birth',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF344C40),
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Material(
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: _birthMissing
+                                ? const Color(0xFFC43C32)
+                                : const Color(0xFFDEE7DF),
                           ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        tooltip: 'Close registration',
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          color: Color(0xFF55735F),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(22, 0, 22, 20),
-                    child: Form(
-                      key: _form,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF14583E), Color(0xFF2F7857)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: pickBirth,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 17,
                             ),
                             child: Row(
                               children: [
-                                Container(
-                                  width: 48,
-                                  height: 54,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFCF2C9),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Icon(
-                                    Icons.card_giftcard_rounded,
-                                    color: Color(0xFF936B25),
-                                    size: 28,
+                                const Icon(
+                                  Icons.cake_outlined,
+                                  size: 20,
+                                  color: Color(0xFF71897A),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _birth == null
+                                        ? 'Choose date of birth'
+                                        : '${_birth!.day.toString().padLeft(2, '0')} / ${_birth!.month.toString().padLeft(2, '0')} / ${_birth!.year}',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: _birth == null
+                                          ? const Color(0xFF99A49C)
+                                          : const Color(0xFF243A2E),
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 14),
-                                const Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'A little loyalty. More rewards.',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      SizedBox(height: 5),
-                                      Text(
-                                        'Add the guest’s details to activate this card.',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xFFD5E8D7),
-                                          height: 1.45,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                const Icon(
+                                  Icons.calendar_month_outlined,
+                                  size: 18,
+                                  color: Color(0xFF246B50),
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(height: 22),
-                          const Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'Guest details',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xFF243B2D),
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                'All fields required',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF7C8B7F),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          field(
-                            'Full name',
-                            'e.g. Alex Perera',
-                            Icons.person_outline_rounded,
-                            _name,
-                            capitalization: TextCapitalization.words,
-                            validate: (v) => (v?.trim().isEmpty ?? true)
-                                ? 'Enter the guest’s name'
-                                : (v!.trim().length > 120
-                                    ? 'Use 120 characters or fewer'
-                                    : null),
-                          ),
-                          field(
-                            'Phone number',
-                            'e.g. +94 77 123 4567',
-                            Icons.phone_outlined,
-                            _phone,
-                            keyboard: TextInputType.phone,
-                            validate: (v) => (v?.trim().length ?? 0) < 5 ||
-                                    (v?.trim().length ?? 0) > 40
-                                ? 'Enter a valid phone number'
-                                : null,
-                          ),
-                          field(
-                            'Email address',
-                            'guest@example.com',
-                            Icons.alternate_email_rounded,
-                            _email,
-                            keyboard: TextInputType.emailAddress,
-                            action: TextInputAction.done,
-                            validate: (v) => !RegExp(
-                                      r'^[^ @]+@[^ @]+\.[^ @]+$',
-                                    ).hasMatch(v?.trim() ?? '') ||
-                                    (v?.trim().length ?? 0) > 254
-                                ? 'Enter a valid email address'
-                                : null,
-                          ),
-                          const Text(
-                            'Date of birth',
+                        ),
+                      ),
+                      if (_birthMissing)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 7, left: 12),
+                          child: Text(
+                            'Choose the guest’s date of birth',
                             style: TextStyle(
+                              color: Color(0xFFC43C32),
                               fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF344C40),
                             ),
                           ),
-                          const SizedBox(height: 7),
-                          Material(
-                            color: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(
-                                color: _birthMissing
-                                    ? const Color(0xFFC43C32)
-                                    : const Color(0xFFDEE7DF),
-                              ),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: InkWell(
-                              onTap: pickBirth,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 17,
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.cake_outlined,
-                                      size: 20,
-                                      color: Color(0xFF71897A),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _birth == null
-                                            ? 'Choose date of birth'
-                                            : '${_birth!.day.toString().padLeft(2, '0')} / ${_birth!.month.toString().padLeft(2, '0')} / ${_birth!.year}',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: _birth == null
-                                              ? const Color(0xFF99A49C)
-                                              : const Color(0xFF243A2E),
-                                        ),
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.calendar_month_outlined,
-                                      size: 18,
-                                      color: Color(0xFF246B50),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                        ),
+                      const SizedBox(height: 18),
+                      const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.lock_outline_rounded,
+                            size: 16,
+                            color: Color(0xFF788E7B),
                           ),
-                          if (_birthMissing)
-                            const Padding(
-                              padding: EdgeInsets.only(top: 7, left: 12),
-                              child: Text(
-                                'Choose the guest’s date of birth',
-                                style: TextStyle(
-                                  color: Color(0xFFC43C32),
-                                  fontSize: 12,
-                                ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Confirm the guest agrees to share these details with the restaurant for loyalty membership. Keep the physical card safe.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF7A897D),
+                                height: 1.5,
                               ),
                             ),
-                          const SizedBox(height: 18),
-                          const Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Icon(
-                                Icons.lock_outline_rounded,
-                                size: 16,
-                                color: Color(0xFF788E7B),
-                              ),
-                              SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Confirm the guest agrees to share these details with the restaurant for loyalty membership. Keep the physical card safe.',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Color(0xFF7A897D),
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                         ],
                       ),
-                    ),
+                    ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.fromLTRB(22, 14, 22, 16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: Color(0xFFE7EDE5))),
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: submit,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF246B50),
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size.fromHeight(52),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(13),
-                        ),
-                      ),
-                      icon: const Icon(
-                        Icons.check_circle_outline_rounded,
-                        size: 20,
-                      ),
-                      label: const Text(
-                        'Activate & attach card',
-                        style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
+            Container(
+              padding: const EdgeInsets.fromLTRB(22, 14, 22, 16),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Color(0xFFE7EDE5))),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: submit,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF246B50),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size.fromHeight(52),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                  ),
+                  icon: const Icon(
+                    Icons.check_circle_outline_rounded,
+                    size: 20,
+                  ),
+                  label: const Text(
+                    'Activate & attach card',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }
 
 // Restaurant-local collection times; saved deadlines remain absolute UTC instants.
@@ -9390,11 +9460,11 @@ String collectionLabel(DateTime value) {
   final day = d.year == now.year && d.month == now.month && d.day == now.day
       ? 'Today'
       : (DateTime.utc(d.year, d.month, d.day)
-                  .difference(DateTime.utc(now.year, now.month, now.day))
-                  .inDays ==
-              1
-          ? 'Tomorrow'
-          : '${d.day}/${d.month}');
+                    .difference(DateTime.utc(now.year, now.month, now.day))
+                    .inDays ==
+                1
+            ? 'Tomorrow'
+            : '${d.day}/${d.month}');
   return '$day · ${collectionClock(d)}';
 }
 
@@ -9422,10 +9492,10 @@ class _CollectionReadySheetState extends State<CollectionReadySheet> {
   DateTime? deadline() => choice == 'In 15 min'
       ? collectionNow().add(const Duration(minutes: 15))
       : choice == 'In 30 min'
-          ? collectionNow().add(const Duration(minutes: 30))
-          : choice == 'Choose time'
-              ? chosen
-              : null;
+      ? collectionNow().add(const Duration(minutes: 30))
+      : choice == 'Choose time'
+      ? chosen
+      : null;
   Future<void> chooseTime() async {
     final now = collectionNow();
     final initial = chosen == null
@@ -9460,8 +9530,9 @@ class _CollectionReadySheetState extends State<CollectionReadySheet> {
     setState(() {
       choice = 'Choose time';
       chosen = at;
-      error =
-          at.isAfter(collectionNow()) ? null : 'Choose a time later than now.';
+      error = at.isAfter(collectionNow())
+          ? null
+          : 'Choose a time later than now.';
     });
   }
 
@@ -9647,55 +9718,55 @@ class CollectionDeadlineBanner extends StatelessWidget {
     final accent = done
         ? const Color(0xFF246B50)
         : late
-            ? const Color(0xFFB42318)
-            : const Color(0xFFA5630A);
+        ? const Color(0xFFB42318)
+        : const Color(0xFFA5630A);
     final bg = done
         ? const Color(0xFFEDF8F1)
         : late
-            ? const Color(0xFFFFF0ED)
-            : const Color(0xFFFFF8E8);
+        ? const Color(0xFFFFF0ED)
+        : const Color(0xFFFFF8E8);
     Widget detail(String label, String value, {double size = 24}) => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                label,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: accent,
-                ),
-              ),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            label,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: accent,
             ),
-            const SizedBox(height: 3),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                value,
-                maxLines: 1,
-                style: TextStyle(
-                  fontSize: size,
-                  height: 1.1,
-                  fontWeight: FontWeight.w800,
-                  color: accent,
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                ),
-              ),
+          ),
+        ),
+        const SizedBox(height: 3),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: size,
+              height: 1.1,
+              fontWeight: FontWeight.w800,
+              color: accent,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
-          ],
-        );
+          ),
+        ),
+      ],
+    );
     if (compact) {
       final elapsed = remaining.abs();
       final countdown = elapsed.inDays > 0
           ? '${elapsed.inDays}d ${elapsed.inHours % 24}h'
           : elapsed.inHours > 0
-              ? '${elapsed.inHours}h ${elapsed.inMinutes % 60}m'
-              : '${elapsed.inMinutes}m ${elapsed.inSeconds % 60}s';
+          ? '${elapsed.inHours}h ${elapsed.inMinutes % 60}m'
+          : '${elapsed.inMinutes}m ${elapsed.inSeconds % 60}s';
       return Container(
         color: bg,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -9756,8 +9827,8 @@ class CollectionDeadlineBanner extends StatelessWidget {
               done
                   ? 'Ready for collection'
                   : late
-                      ? 'Overdue by'
-                      : 'Time remaining',
+                  ? 'Overdue by'
+                  : 'Time remaining',
               done ? 'Ready' : collectionCountdown(remaining),
               size: 22,
             ),
@@ -9795,70 +9866,70 @@ class _CollectionTimePreviewState extends State<CollectionTimePreview> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Collection time · test preview')),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  Card(
-                    clipBehavior: Clip.antiAlias,
-                    child: Padding(
-                      padding: EdgeInsets.zero,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Container(
-                            color: const Color(0xFF246B50),
-                            padding: const EdgeInsets.all(16),
-                            child: const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Nimal',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                Text(
-                                  'Takeaway · Nimal · 2 items',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
+    appBar: AppBar(title: const Text('Collection time · test preview')),
+    body: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Card(
+                clipBehavior: Clip.antiAlias,
+                child: Padding(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        color: const Color(0xFF246B50),
+                        padding: const EdgeInsets.all(16),
+                        child: const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Nimal',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          CollectionDeadlineBanner(deadline: deadline),
-                          const ListTile(
-                            title: Text('1 × Devilled Chicken'),
-                            subtitle: Text('Regular · Glass'),
-                          ),
-                          const Divider(),
-                          const ListTile(
-                            title: Text('1 × Chicken Biryani'),
-                            subtitle: Text('Regular · Medium'),
-                          ),
-                        ],
+                            Text(
+                              'Takeaway · Nimal · 2 items',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      CollectionDeadlineBanner(deadline: deadline),
+                      const ListTile(
+                        title: Text('1 × Devilled Chicken'),
+                        subtitle: Text('Regular · Glass'),
+                      ),
+                      const Divider(),
+                      const ListTile(
+                        title: Text('1 × Chicken Biryani'),
+                        subtitle: Text('Regular · Medium'),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: pick,
-                    child: const Text('Preview POS ready-time selector'),
-                  ),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: pick,
+                child: const Text('Preview POS ready-time selector'),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 // Keep checkout controls visible until their reserved place reaches the dock.
@@ -9905,7 +9976,8 @@ class _PaymentDockState extends State<_PaymentDock> {
       if (viewport is! RenderBox ||
           slot is! RenderBox ||
           !viewport.hasSize ||
-          !slot.hasSize) return;
+          !slot.hasSize)
+        return;
       final naturalTop = slot.localToGlobal(Offset.zero, ancestor: viewport).dy;
       final dockTop = (viewport.size.height - slot.size.height).clamp(
         0.0,
@@ -9923,13 +9995,13 @@ class _PaymentDockState extends State<_PaymentDock> {
     return LayoutBuilder(
       builder: (context, constraints) {
         Widget panel() => ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: constraints.maxHeight),
-              child: SingleChildScrollView(
-                primary: false,
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-                child: widget.controls,
-              ),
-            );
+          constraints: BoxConstraints(maxHeight: constraints.maxHeight),
+          child: SingleChildScrollView(
+            primary: false,
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
+            child: widget.controls,
+          ),
+        );
         if (constraints.maxWidth < 600) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -10039,10 +10111,10 @@ class _WaiterPaymentReviewState extends State<WaiterPaymentReview> {
     final check = card
         ? 'The card terminal shows payment approved'
         : zero
-            ? 'I checked the items and zero total'
-            : voucher
-                ? 'I checked the voucher and amount'
-                : 'I received and counted ${widget.amount} in cash';
+        ? 'I checked the items and zero total'
+        : voucher
+        ? 'I checked the voucher and amount'
+        : 'I received and counted ${widget.amount} in cash';
     return SafeArea(
       top: false,
       child: SingleChildScrollView(
@@ -10077,8 +10149,9 @@ class _WaiterPaymentReviewState extends State<WaiterPaymentReview> {
                 ),
                 IconButton(
                   tooltip: 'Back to payment',
-                  onPressed:
-                      submitted ? null : () => Navigator.pop(context, false),
+                  onPressed: submitted
+                      ? null
+                      : () => Navigator.pop(context, false),
                   icon: const Icon(Icons.close),
                 ),
               ],
@@ -10135,8 +10208,8 @@ class _WaiterPaymentReviewState extends State<WaiterPaymentReview> {
                     widget.voucherSale
                         ? 'Voucher credit is added when saved'
                         : widget.partial
-                            ? 'Partial payment · table stays open'
-                            : 'Final payment · table closes when saved',
+                        ? 'Partial payment · table stays open'
+                        : 'Final payment · table closes when saved',
                     style: const TextStyle(fontSize: 12, color: forest),
                   ),
                 ],
@@ -10240,8 +10313,9 @@ class _WaiterPaymentReviewState extends State<WaiterPaymentReview> {
             SizedBox(
               width: double.infinity,
               child: TextButton(
-                onPressed:
-                    submitted ? null : () => Navigator.pop(context, false),
+                onPressed: submitted
+                    ? null
+                    : () => Navigator.pop(context, false),
                 child: const Text('Back to payment'),
               ),
             ),
@@ -10376,8 +10450,9 @@ class _WaiterPaymentChoiceState extends State<WaiterPaymentChoice> {
                             ? Icons.check_circle
                             : Icons.radio_button_unchecked,
                         size: 18,
-                        color:
-                            widget.selected ? forest : const Color(0xFFB5C1B9),
+                        color: widget.selected
+                            ? forest
+                            : const Color(0xFFB5C1B9),
                       ),
                     ],
                   ),
@@ -10406,58 +10481,54 @@ class ServiceMenuOption extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) => AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? const Color(0xFFE7F3EC) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
+    duration: const Duration(milliseconds: 160),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: selected ? const Color(0xFFE7F3EC) : Colors.white,
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: accent.withValues(alpha: .12),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(icon, color: accent, size: 23),
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: .12),
-                borderRadius: BorderRadius.circular(13),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF22382C),
+                ),
               ),
-              child: Icon(icon, color: accent, size: 23),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF22382C),
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    hint,
-                    style:
-                        const TextStyle(fontSize: 11, color: Color(0xFF748078)),
-                  ),
-                ],
+              const SizedBox(height: 3),
+              Text(
+                hint,
+                style: const TextStyle(fontSize: 11, color: Color(0xFF748078)),
               ),
-            ),
-            const SizedBox(width: 12),
-            Icon(
-              selected
-                  ? Icons.check_circle_rounded
-                  : Icons.chevron_right_rounded,
-              size: 20,
-              color:
-                  selected ? const Color(0xFF246B50) : const Color(0xFFA7B8AE),
-            ),
-          ],
+            ],
+          ),
         ),
-      );
+        const SizedBox(width: 12),
+        Icon(
+          selected ? Icons.check_circle_rounded : Icons.chevron_right_rounded,
+          size: 20,
+          color: selected ? const Color(0xFF246B50) : const Color(0xFFA7B8AE),
+        ),
+      ],
+    ),
+  );
 }
 
 // The web brand animation, rendered locally without an image or network request.
@@ -10502,32 +10573,32 @@ class _ShineyLoadingIndicatorState extends State<ShineyLoadingIndicator>
 
   @override
   Widget build(BuildContext context) => Semantics(
-        label: widget.label ?? 'Loading',
-        liveRegion: true,
-        child: ExcludeSemantics(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CustomPaint(
-                size: Size.square(widget.size),
-                painter: _ShineyLoadingPainter(motion),
-              ),
-              if (widget.label != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  widget.label!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF3D6B55),
-                  ),
-                ),
-              ],
-            ],
+    label: widget.label ?? 'Loading',
+    liveRegion: true,
+    child: ExcludeSemantics(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CustomPaint(
+            size: Size.square(widget.size),
+            painter: _ShineyLoadingPainter(motion),
           ),
-        ),
-      );
+          if (widget.label != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              widget.label!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF3D6B55),
+              ),
+            ),
+          ],
+        ],
+      ),
+    ),
+  );
 }
 
 class _ShineyLoadingPainter extends CustomPainter {
@@ -10637,37 +10708,37 @@ class SeatGuestsPanel extends StatelessWidget {
     }
 
     Widget alternative(String title, IconData icon, String action) => Expanded(
-          child: OutlinedButton(
-            onPressed: () => onAction(action),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: ink,
-              backgroundColor: Colors.white,
-              minimumSize: const Size(0, 64),
-              padding: const EdgeInsets.all(10),
-              side: const BorderSide(color: Color(0xFFE4E7ED)),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+      child: OutlinedButton(
+        onPressed: () => onAction(action),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: ink,
+          backgroundColor: Colors.white,
+          minimumSize: const Size(0, 64),
+          padding: const EdgeInsets.all(10),
+          side: const BorderSide(color: Color(0xFFE4E7ED)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: green, size: 20),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: green, size: 20),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+          ],
+        ),
+      ),
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -10776,8 +10847,9 @@ class SeatGuestsPanel extends StatelessWidget {
                   ),
                   IconButton(
                     tooltip: 'Remove one guest',
-                    onPressed:
-                        guests > 1 ? () => onGuestsChanged(guests - 1) : null,
+                    onPressed: guests > 1
+                        ? () => onGuestsChanged(guests - 1)
+                        : null,
                     icon: const Icon(Icons.remove_rounded),
                     color: green,
                   ),
@@ -10795,8 +10867,9 @@ class SeatGuestsPanel extends StatelessWidget {
                   ),
                   IconButton(
                     tooltip: 'Add one guest',
-                    onPressed:
-                        guests < 30 ? () => onGuestsChanged(guests + 1) : null,
+                    onPressed: guests < 30
+                        ? () => onGuestsChanged(guests + 1)
+                        : null,
                     icon: const Icon(Icons.add_rounded),
                     color: green,
                   ),
@@ -10991,8 +11064,10 @@ class _ServiceTablePickerState extends State<ServiceTablePicker> {
   }
 
   String elapsed(DiningTable table) {
-    final minutes =
-        DateTime.now().difference(table.started!).inMinutes.clamp(0, 999999);
+    final minutes = DateTime.now()
+        .difference(table.started!)
+        .inMinutes
+        .clamp(0, 999999);
     if (minutes >= 1440)
       return '${minutes ~/ 1440}d ${(minutes % 1440) ~/ 60}h';
     if (minutes >= 60) return '${minutes ~/ 60}h ${minutes % 60}m';
@@ -11159,8 +11234,9 @@ class _ServiceTablePickerState extends State<ServiceTablePicker> {
                                       child: Text(
                                         table.id,
                                         style: TextStyle(
-                                          color:
-                                              selected ? Colors.white : green,
+                                          color: selected
+                                              ? Colors.white
+                                              : green,
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -11210,7 +11286,7 @@ class _ServiceTablePickerState extends State<ServiceTablePicker> {
                                       selected
                                           ? Icons.check_circle_rounded
                                           : Icons
-                                              .radio_button_unchecked_rounded,
+                                                .radio_button_unchecked_rounded,
                                       color: selected ? green : wMuted,
                                       size: 21,
                                     ),
