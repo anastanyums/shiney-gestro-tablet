@@ -6,6 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'waiter_demo.dart';
 import 'toast.dart';
 
+// A partially sold-out product remains orderable, but must also be discoverable
+// in Sold out so staff can restore the affected portion without hunting for it.
+bool hasSoldOutKitchenVariants(Dish dish) => dish.kitchenVariations.any(
+      (group) => group.allOptions.any((option) => !option.available),
+    );
+
 // Commercial annotations stay on the order record, not the preparation ticket.
 String kitchenPreparationNote(String note) {
   return note
@@ -16,14 +22,16 @@ String kitchenPreparationNote(String note) {
         for (var i = 0; i < parts.length; i++) {
           final part = parts[i].trim();
           if (RegExp(
-                  r'^(?:loyalty reward|coupon|discount|voucher)(?:\s*[:·-]|$)',
-                  caseSensitive: false)
-              .hasMatch(part)) {
+            r'^(?:loyalty reward|coupon|discount|voucher)(?:\s*[:·-]|$)',
+            caseSensitive: false,
+          ).hasMatch(part)) {
             // Generated reward annotations use the following segment as their title.
-            if (RegExp(r'^(?:loyalty reward|coupon|discount|voucher)$',
-                        caseSensitive: false)
-                    .hasMatch(part) &&
-                i + 1 < parts.length) i++;
+            if (RegExp(
+                  r'^(?:loyalty reward|coupon|discount|voucher)$',
+                  caseSensitive: false,
+                ).hasMatch(part) &&
+                i + 1 < parts.length)
+              i++;
             continue;
           }
           if (part.isNotEmpty) kept.add(part);
@@ -49,8 +57,7 @@ class _StationBoardState extends State<StationBoard> {
   String menuFilter = 'All', menuQuery = '';
   StationTicket? confirming;
   StationTicket? cancelling; // ticket whose header asks to cancel the order
-  OrderLine? itemOpen,
-      itemCancelling; // item showing its Cancel / Ready buttons, or its cancel question // ticket whose header shows Cancel / Ready
+  OrderLine? itemOpen, itemCancelling; // item showing its Cancel / Ready buttons, or its cancel question // ticket whose header shows Cancel / Ready
   @override
   void initState() {
     super.initState();
@@ -194,25 +201,19 @@ class _StationBoardState extends State<StationBoard> {
         )
         .toList();
     final active = all.where((t) => t.state != 'Ready').length;
-    final lateCount = all
-        .where(
-          (t) =>
-              t.state != 'Ready' &&
-              DateTime.now().difference(t.created).inMinutes >= 10,
-        )
-        .length;
-    final tickets = all
-        .where(
-          (t) =>
-              filter == 'All' ||
-              (filter == 'Active' ? t.state != 'Ready' : t.state == filter),
-        )
-        .toList()
-      ..sort(
-        (a, b) => newestFirst
-            ? b.created.compareTo(a.created)
-            : a.created.compareTo(b.created),
-      );
+    final tickets =
+        all
+            .where(
+              (t) =>
+                  filter == 'All' ||
+                  (filter == 'Active' ? t.state != 'Ready' : t.state == filter),
+            )
+            .toList()
+          ..sort(
+            (a, b) => newestFirst
+                ? b.created.compareTo(a.created)
+                : a.created.compareTo(b.created),
+          );
     return kitchenFont(
       context,
       Scaffold(
@@ -225,182 +226,177 @@ class _StationBoardState extends State<StationBoard> {
             section == 1
                 ? doneOrders(all)
                 : section == 2
-                    ? activeTables()
-                    : section == 3
-                        ? menuSection()
-                        : Column(
-                            children: [
-                              Expanded(
-                                child: tickets.isEmpty
-                                    ? LayoutBuilder(
-                                        builder: (context, constraints) =>
-                                            SingleChildScrollView(
-                                          physics:
-                                              const AlwaysScrollableScrollPhysics(),
-                                          child: SizedBox(
-                                            height: constraints.maxHeight,
-                                            child: Center(
+                ? activeTables()
+                : section == 3
+                ? menuSection()
+                : Column(
+                    children: [
+                      Expanded(
+                        child: tickets.isEmpty
+                            ? LayoutBuilder(
+                                builder: (context, constraints) =>
+                                    SingleChildScrollView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      child: SizedBox(
+                                        height: constraints.maxHeight,
+                                        child: Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(24),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  widget.station == 'Kitchen'
+                                                      ? Icons.restaurant
+                                                      : Icons.local_bar,
+                                                  color: green,
+                                                  size: 48,
+                                                ),
+                                                const SizedBox(height: 16),
+                                                Text(
+                                                  'No ${filter.toLowerCase()} tickets',
+                                                  style: const TextStyle(
+                                                    color: Color(0xFF23263A),
+                                                    fontSize: 22,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 10),
+                                                const Text(
+                                                  'Orders sent by the waiter will appear here.',
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: Color(0xFF8A8FA3),
+                                                    height: 1.6,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                              )
+                            : LayoutBuilder(
+                                builder: (context, constraints) {
+                                  // Four tickets across on landscape tablets; narrower views stay readable.
+                                  final width = constraints.maxWidth;
+                                  final count = width >= 1000
+                                      ? 4
+                                      : width >= 840
+                                      ? 3
+                                      : width >= 720
+                                      ? 2
+                                      : 1;
+                                  // Variable-height cards arranged in responsive columns like the reference.
+                                  final columns = List.generate(
+                                    count,
+                                    (_) => <StationTicket>[],
+                                  );
+                                  for (int i = 0; i < tickets.length; i++) {
+                                    columns[i % count].add(tickets[i]);
+                                  }
+                                  return SingleChildScrollView(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      12,
+                                      16,
+                                      24,
+                                    ),
+                                    child: Align(
+                                      alignment: Alignment.topCenter,
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxWidth: count == 1
+                                              ? 520
+                                              : double.infinity,
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: List.generate(
+                                            count,
+                                            (i) => Expanded(
                                               child: Padding(
-                                                padding:
-                                                    const EdgeInsets.all(24),
+                                                padding: EdgeInsets.only(
+                                                  right: i == count - 1
+                                                      ? 0
+                                                      : 14,
+                                                ),
                                                 child: Column(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      widget.station ==
-                                                              'Kitchen'
-                                                          ? Icons.restaurant
-                                                          : Icons.local_bar,
-                                                      color: green,
-                                                      size: 48,
-                                                    ),
-                                                    const SizedBox(height: 16),
-                                                    Text(
-                                                      'No ${filter.toLowerCase()} tickets',
-                                                      style: const TextStyle(
-                                                        color:
-                                                            Color(0xFF23263A),
-                                                        fontSize: 22,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 10),
-                                                    const Text(
-                                                      'Orders sent by the waiter will appear here.',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                        color:
-                                                            Color(0xFF8A8FA3),
-                                                        height: 1.6,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                  children: columns[i]
+                                                      .map(ticketCard)
+                                                      .toList(),
                                                 ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      )
-                                    : LayoutBuilder(
-                                        builder: (context, constraints) {
-                                          // Four tickets across on landscape tablets; narrower views stay readable.
-                                          final width = constraints.maxWidth;
-                                          final count = width >= 1000
-                                              ? 4
-                                              : width >= 840
-                                                  ? 3
-                                                  : width >= 720
-                                                      ? 2
-                                                      : 1;
-                                          // Variable-height cards arranged in responsive columns like the reference.
-                                          final columns = List.generate(
-                                            count,
-                                            (_) => <StationTicket>[],
-                                          );
-                                          for (int i = 0;
-                                              i < tickets.length;
-                                              i++) {
-                                            columns[i % count].add(tickets[i]);
-                                          }
-                                          return SingleChildScrollView(
-                                            padding: const EdgeInsets.fromLTRB(
-                                              16,
-                                              12,
-                                              16,
-                                              24,
-                                            ),
-                                            child: Align(
-                                              alignment: Alignment.topCenter,
-                                              child: ConstrainedBox(
-                                                constraints: BoxConstraints(
-                                                  maxWidth: count == 1
-                                                      ? 520
-                                                      : double.infinity,
-                                                ),
-                                                child: Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: List.generate(
-                                                    count,
-                                                    (i) => Expanded(
-                                                      child: Padding(
-                                                        padding:
-                                                            EdgeInsets.only(
-                                                          right: i == count - 1
-                                                              ? 0
-                                                              : 14,
-                                                        ),
-                                                        child: Column(
-                                                          children: columns[i]
-                                                              .map(ticketCard)
-                                                              .toList(),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
                                       ),
+                                    ),
+                                  );
+                                },
                               ),
-                              Padding(
-                                padding: EdgeInsets.fromLTRB(16, 8, 16, 14),
-                                child: Text(
-                                  'Tap an item to mark it ready or cancel it · Tap the order header for the whole order · Tap the guest name or number to cancel · Warning after ${KitchenTicketStyle.warnMinutes} min, late after ${KitchenTicketStyle.lateMinutes} min',
-                                  style: TextStyle(
-                                    color: Color(0xFF8A8FA3),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
+                      ),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(16, 8, 16, 14),
+                        child: Text(
+                          'Tap an item to mark it ready or cancel it · Tap the order header for the whole order · Tap the guest name or number to cancel · Warning after ${KitchenTicketStyle.warnMinutes} min, late after ${KitchenTicketStyle.lateMinutes} min',
+                          style: TextStyle(
+                            color: Color(0xFF8A8FA3),
+                            fontSize: 12,
                           ),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         ),
       ),
     );
   }
 
-  // The header scrolls away; pulling down reveals station and role controls.
-  Widget stationShell(Widget body) => NestedScrollView(
-        floatHeaderSlivers: true,
-        headerSliverBuilder: (context, _) => [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: walletCard(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                children: [stationBar()],
-              ),
-            ),
+  // Only Active orders has station/role controls; the other tabs use the full body.
+  // Pulling down on Active orders reveals the header even when there are no tickets.
+  Widget stationShell(Widget body) {
+    if (section != 0) return body;
+    return NestedScrollView(
+    floatHeaderSlivers: true,
+    headerSliverBuilder: (context, _) => [
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: walletCard(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            children: [stationBar()],
           ),
-        ],
-        body: body,
-      );
+        ),
+      ),
+    ],
+    body: body,
+    );
+  }
 
   void explainSingleStation() => showDialog<void>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(
-            'Only one ${widget.station == 'Kitchen' ? 'kitchen' : 'bar'} station',
-          ),
-          content: Text(
-            'This restaurant has just the default $boardName, which shows all '
-            '${wsKind == 'food' ? 'food' : 'drink'} orders. To split orders between stations '
-            '(for example Grill, Tandoori or Cocktails), add them in Mission Control and give '
-            'each dish its station. They will appear here, and you can pick one for this tablet.',
-          ),
-          actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('OK'),
-            ),
-          ],
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(
+        'Only one ${widget.station == 'Kitchen' ? 'kitchen' : 'bar'} station',
+      ),
+      content: Text(
+        'This restaurant has just the default $boardName, which shows all '
+        '${wsKind == 'food' ? 'food' : 'drink'} orders. To split orders between stations '
+        '(for example Grill, Tandoori or Cocktails), add them in Mission Control and give '
+        'each dish its station. They will appear here, and you can pick one for this tablet.',
+      ),
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('OK'),
         ),
-      );
+      ],
+    ),
+  );
 
   // Open (not yet ready) orders of one station, shown as a live count on its tab.
   int stationOrders(Workstation w) => demoRestaurant.tickets
@@ -456,8 +452,8 @@ class _StationBoardState extends State<StationBoard> {
                 w.isDefault
                     ? Icons.dashboard_rounded
                     : (kitchen
-                        ? Icons.local_fire_department_rounded
-                        : Icons.local_bar_rounded),
+                          ? Icons.local_fire_department_rounded
+                          : Icons.local_bar_rounded),
                 size: 20,
                 color: on ? Colors.white : green,
               ),
@@ -809,8 +805,9 @@ class _StationBoardState extends State<StationBoard> {
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: TextStyle(
-                                                  color:
-                                                      const Color(0xFF23263A),
+                                                  color: const Color(
+                                                    0xFF23263A,
+                                                  ),
                                                   fontSize: compact ? 24 : 28,
                                                   fontWeight: FontWeight.w800,
                                                   letterSpacing: -.5,
@@ -929,7 +926,10 @@ class _StationBoardState extends State<StationBoard> {
                       ? null
                       : BoxDecoration(
                           color: Color.lerp(
-                              Colors.white, itemTint(ticket.items[i]), 0.11),
+                            Colors.white,
+                            itemTint(ticket.items[i]),
+                            0.11,
+                          ),
                           border: Border(
                             bottom: BorderSide(
                               color: itemTint(ticket.items[i])!,
@@ -965,9 +965,9 @@ class _StationBoardState extends State<StationBoard> {
     final boxColour = done
         ? const Color(0xFFF4F5F7)
         : dishColour ??
-            (item.quantity > 1
-                ? const Color(0xFFD98A00)
-                : const Color(0xFF23263A));
+              (item.quantity > 1
+                  ? const Color(0xFFD98A00)
+                  : const Color(0xFF23263A));
     final content = Padding(
       padding: EdgeInsets.symmetric(vertical: compact ? 8 : 10),
       child: Row(
@@ -987,8 +987,8 @@ class _StationBoardState extends State<StationBoard> {
                 color: done
                     ? const Color(0xFFA9AEB5)
                     : dishColour == null
-                        ? Colors.white
-                        : kitchenColourText(dishColour),
+                    ? Colors.white
+                    : kitchenColourText(dishColour),
                 fontSize: compact ? 14 : 16,
                 fontWeight: FontWeight.w800,
               ),
@@ -1013,8 +1013,8 @@ class _StationBoardState extends State<StationBoard> {
                       color: done
                           ? const Color(0xFFA9AEB5)
                           : dishColour == null
-                              ? const Color(0xFF23263A)
-                              : Color.lerp(dishColour, Colors.black, 0.35),
+                          ? const Color(0xFF23263A)
+                          : Color.lerp(dishColour, Colors.black, 0.35),
                       decoration: done ? TextDecoration.lineThrough : null,
                     ),
                   ),
@@ -1127,78 +1127,79 @@ class _StationBoardState extends State<StationBoard> {
   }
 
   Widget choiceButton(
-          String text, Color colour, bool filled, VoidCallback onTap) =>
-      filled
-          ? FilledButton(
-              onPressed: onTap,
-              style: FilledButton.styleFrom(
-                backgroundColor: colour,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(0, 40),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                text,
-                maxLines: 1,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-            )
-          : OutlinedButton(
-              onPressed: onTap,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF23263A),
-                backgroundColor: Colors.white,
-                side: const BorderSide(color: Color(0xFFD5D8DF), width: 1.5),
-                minimumSize: const Size(0, 40),
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: Text(
-                text,
-                maxLines: 1,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-              ),
-            );
+    String text,
+    Color colour,
+    bool filled,
+    VoidCallback onTap,
+  ) => filled
+      ? FilledButton(
+          onPressed: onTap,
+          style: FilledButton.styleFrom(
+            backgroundColor: colour,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(0, 40),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            text,
+            maxLines: 1,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        )
+      : OutlinedButton(
+          onPressed: onTap,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF23263A),
+            backgroundColor: Colors.white,
+            side: const BorderSide(color: Color(0xFFD5D8DF), width: 1.5),
+            minimumSize: const Size(0, 40),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Text(
+            text,
+            maxLines: 1,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          ),
+        );
 
   Widget twoChoices(Widget left, Widget right) => Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(child: left),
-          const SizedBox(width: 8),
-          Expanded(child: right),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Expanded(child: left),
+      const SizedBox(width: 8),
+      Expanded(child: right),
+    ],
+  );
 
   static const cancelRed = Color(0xFFB42318);
 
   // Right side of an item: Cancel (close) or Ready.
   Widget itemBar(StationTicket ticket, OrderLine item) => roundChoice(
-        tint: const Color(0xFFEAF5EF),
-        backText: 'Cancel',
-        onBack: () => setState(() => itemOpen = null),
-        mainText: 'Ready',
-        mainIcon: Icons.check_rounded,
-        mainColour: green,
-        onMain: () => markItemReady(ticket, item),
-      );
+    tint: const Color(0xFFEAF5EF),
+    backText: 'Cancel',
+    onBack: () => setState(() => itemOpen = null),
+    mainText: 'Ready',
+    mainIcon: Icons.check_rounded,
+    mainColour: green,
+    onMain: () => markItemReady(ticket, item),
+  );
 
   // Left side of an item (quantity box): No on the left, Cancel on the right.
   Widget itemCancelBar(StationTicket ticket, OrderLine item) => roundChoice(
-        tint: const Color(0xFFFDECEC),
-        backText: 'No',
-        onBack: () => setState(() => itemCancelling = null),
-        mainText: 'Cancel',
-        mainIcon: Icons.close_rounded,
-        mainColour: cancelRed,
-        onMain: () => cancelOneItem(ticket, item),
-      );
+    tint: const Color(0xFFFDECEC),
+    backText: 'No',
+    onBack: () => setState(() => itemCancelling = null),
+    mainText: 'Cancel',
+    mainIcon: Icons.close_rounded,
+    mainColour: cancelRed,
+    onMain: () => cancelOneItem(ticket, item),
+  );
 
   void markItemReady(StationTicket ticket, OrderLine item) {
     setState(() => itemOpen = null);
@@ -1211,20 +1212,20 @@ class _StationBoardState extends State<StationBoard> {
   }
 
   Widget mod(String text) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF4F5F7),
-          borderRadius: BorderRadius.circular(6),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF4A4E63),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: const Color(0xFFF4F5F7),
+      borderRadius: BorderRadius.circular(6),
+    ),
+    child: Text(
+      text,
+      style: const TextStyle(
+        fontSize: 12,
+        color: Color(0xFF4A4E63),
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  );
   void markReady(StationTicket ticket) {
     setState(() => confirming = null);
     demoRestaurant.transition(ticket, 'Ready');
@@ -1232,26 +1233,26 @@ class _StationBoardState extends State<StationBoard> {
 
   // Right side of a ticket: Cancel (close) or Ready.
   Widget confirmBar(StationTicket ticket) => roundChoice(
-        tint: const Color(0xFFEAF5EF),
-        backText: 'Cancel',
-        onBack: () => setState(() => confirming = null),
-        mainText: 'Ready',
-        mainIcon: Icons.check_rounded,
-        mainColour: green,
-        onMain: () => markReady(ticket),
-      );
+    tint: const Color(0xFFEAF5EF),
+    backText: 'Cancel',
+    onBack: () => setState(() => confirming = null),
+    mainText: 'Ready',
+    mainIcon: Icons.check_rounded,
+    mainColour: green,
+    onMain: () => markReady(ticket),
+  );
 
   // Ticket name tapped: No on the left (under the finger), Cancel on the right,
   // so a double tap never cancels the order.
   Widget cancelBar(StationTicket ticket) => roundChoice(
-        tint: const Color(0xFFFDECEC),
-        backText: 'No',
-        onBack: () => setState(() => cancelling = null),
-        mainText: 'Cancel',
-        mainIcon: Icons.close_rounded,
-        mainColour: cancelRed,
-        onMain: () => cancelOrder(ticket),
-      );
+    tint: const Color(0xFFFDECEC),
+    backText: 'No',
+    onBack: () => setState(() => cancelling = null),
+    mainText: 'Cancel',
+    mainIcon: Icons.close_rounded,
+    mainColour: cancelRed,
+    onMain: () => cancelOrder(ticket),
+  );
 
   // Style 4: tinted strip, small round back button on the left,
   // big round action button on the right.
@@ -1263,124 +1264,125 @@ class _StationBoardState extends State<StationBoard> {
     required IconData mainIcon,
     required Color mainColour,
     required VoidCallback onMain,
-  }) =>
-      LayoutBuilder(builder: (ctx, c) {
-        final big = c.maxHeight.isFinite
-            ? (c.maxHeight - 10).clamp(28.0, 52.0).toDouble()
-            : 52.0;
-        final small = (big * 0.78).roundToDouble();
-        const ink = Color(0xFF23263A);
-        return Container(
-          decoration: BoxDecoration(
-            color: tint,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          padding: EdgeInsets.zero,
-          child: Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: onBack,
-                  borderRadius: BorderRadius.circular(14),
-                  child: SizedBox(
-                    height: big + 10,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: small,
-                              height: small,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: mainColour.withValues(alpha: .28),
-                                  width: 2,
+  }) => LayoutBuilder(
+    builder: (ctx, c) {
+      final big = c.maxHeight.isFinite
+          ? (c.maxHeight - 10).clamp(28.0, 52.0).toDouble()
+          : 52.0;
+      final small = (big * 0.78).roundToDouble();
+      const ink = Color(0xFF23263A);
+      return Container(
+        decoration: BoxDecoration(
+          color: tint,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        padding: EdgeInsets.zero,
+        child: Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: onBack,
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(
+                  height: big + 10,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: small,
+                            height: small,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: mainColour.withValues(alpha: .28),
+                                width: 2,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.undo_rounded,
+                              size: small * 0.46,
+                              color: ink,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            backText,
+                            style: const TextStyle(
+                              color: ink,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: InkWell(
+                onTap: onMain,
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(
+                  height: big + 10,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: big,
+                            height: big,
+                            decoration: BoxDecoration(
+                              color: mainColour,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: mainColour.withValues(alpha: .18),
+                                  spreadRadius: 5,
                                 ),
-                              ),
-                              child: Icon(
-                                Icons.undo_rounded,
-                                size: small * 0.46,
-                                color: ink,
-                              ),
+                                const BoxShadow(
+                                  color: Color(0x2E000000),
+                                  blurRadius: 12,
+                                  offset: Offset(0, 5),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              backText,
-                              style: const TextStyle(
-                                color: ink,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            child: Icon(
+                              mainIcon,
+                              size: big * 0.52,
+                              color: Colors.white,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            mainText,
+                            style: const TextStyle(
+                              color: ink,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
               ),
-              Expanded(
-                child: InkWell(
-                  onTap: onMain,
-                  borderRadius: BorderRadius.circular(14),
-                  child: SizedBox(
-                    height: big + 10,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(4, 4, 10, 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: big,
-                              height: big,
-                              decoration: BoxDecoration(
-                                color: mainColour,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: mainColour.withValues(alpha: .18),
-                                    spreadRadius: 5,
-                                  ),
-                                  const BoxShadow(
-                                    color: Color(0x2E000000),
-                                    blurRadius: 12,
-                                    offset: Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                mainIcon,
-                                size: big * 0.52,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(
-                              mainText,
-                              style: const TextStyle(
-                                color: ink,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      });
+            ),
+          ],
+        ),
+      );
+    },
+  );
 
   void cancelOrder(StationTicket ticket) {
     setState(() => cancelling = null);
@@ -1392,56 +1394,56 @@ class _StationBoardState extends State<StationBoard> {
       .toList();
   String two(int n) => n.toString().padLeft(2, '0');
   Widget statusPill(String text, bool good) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: good ? pale : const Color(0xFFFFF4D6),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: good ? green : const Color(0xFF8A6100),
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    decoration: BoxDecoration(
+      color: good ? pale : const Color(0xFFFFF4D6),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Text(
+      text,
+      style: TextStyle(
+        color: good ? green : const Color(0xFF8A6100),
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+  );
   Widget emptyState(IconData icon, String title, String body) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: green, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: Color(0xFF23263A),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Color(0xFF8A8FA3), height: 1.5),
-              ),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: green, size: 48),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF23263A),
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      );
+          const SizedBox(height: 8),
+          Text(
+            body,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Color(0xFF8A8FA3), height: 1.5),
+          ),
+        ],
+      ),
+    ),
+  );
   Widget nav(List<StationTicket> all, int active) {
     final done = all.where((t) => t.state == 'Ready').length;
     final tablesN = seatedTables.length;
-    final sold = stationDishes.where(demoRestaurant.isSoldOut).length;
+    final sold = stationDishes.where((d) => demoRestaurant.isSoldOut(d) || hasSoldOutKitchenVariants(d)).length;
     Widget badge(int n, Color c, IconData icon) => Badge(
-          isLabelVisible: n > 0,
-          label: Text('$n'),
-          backgroundColor: c,
-          child: Icon(icon),
-        );
+      isLabelVisible: n > 0,
+      label: Text('$n'),
+      backgroundColor: c,
+      child: Icon(icon),
+    );
     return Row(
       children: [
         Expanded(
@@ -1511,55 +1513,55 @@ class _StationBoardState extends State<StationBoard> {
 
   // Centered, width-limited scroll page so wide screens don't stretch cards edge to edge.
   Widget page(List<Widget> children) => Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-            children: children,
-          ),
-        ),
+    alignment: Alignment.topCenter,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 1200),
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        children: children,
+      ),
+    ),
+  );
+  Widget responsiveWrap(
+    List<Widget> children, {
+    double minWidth = 340,
+    bool sessionColumns = false,
+  }) => LayoutBuilder(
+    builder: (context, c) {
+      final cols = sessionColumns && MediaQuery.sizeOf(context).width >= 1000
+          ? 4
+          : (c.maxWidth / minWidth).floor().clamp(1, 4).toInt();
+      final w = (c.maxWidth - (cols - 1) * 12) / cols;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [
+          for (final child in children) SizedBox(width: w, child: child),
+        ],
       );
-  Widget responsiveWrap(List<Widget> children,
-          {double minWidth = 340, bool sessionColumns = false}) =>
-      LayoutBuilder(
-        builder: (context, c) {
-          final cols =
-              sessionColumns && MediaQuery.sizeOf(context).width >= 1000
-                  ? 4
-                  : (c.maxWidth / minWidth).floor().clamp(1, 4).toInt();
-          final w = (c.maxWidth - (cols - 1) * 12) / cols;
-          return Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              for (final child in children) SizedBox(width: w, child: child),
-            ],
-          );
-        },
-      );
+    },
+  );
   Widget filterChip(
     String value,
     int count,
     String current,
     void Function(String) set, {
     String? label,
-  }) =>
-      ServiceCategoryChip(
-        label: label ?? value,
-        count: count,
-        selected: current == value,
-        onTap: () => setState(() => set(value)),
-      );
+  }) => ServiceCategoryChip(
+    label: label ?? value,
+    count: count,
+    selected: current == value,
+    onTap: () => setState(() => set(value)),
+  );
 
   Widget stateTag(String s) {
     final c = s == 'New'
         ? const Color(0xFF2F6FB3)
         : s == 'Preparing'
-            ? green
-            : s == 'Ready'
-                ? const Color(0xFF8A6100)
-                : const Color(0xFFA9AEB5);
+        ? green
+        : s == 'Ready'
+        ? const Color(0xFF8A6100)
+        : const Color(0xFFA9AEB5);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -1588,8 +1590,9 @@ class _StationBoardState extends State<StationBoard> {
         'No finished orders yet',
         'Orders you mark ready appear here, newest first.',
       );
-    final waiting =
-        done.where((t) => !t.items.every((x) => x.status == 'Served')).length;
+    final waiting = done
+        .where((t) => !t.items.every((x) => x.status == 'Served'))
+        .length;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -1662,8 +1665,9 @@ class _StationBoardState extends State<StationBoard> {
                             width: 28,
                             child: Text(
                               '${x.quantity}×',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w700),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                           Expanded(
@@ -1687,15 +1691,16 @@ class _StationBoardState extends State<StationBoard> {
                       ),
                       const SizedBox(width: 4),
                       Flexible(
-                          child: Text(
-                        at == null
-                            ? 'Ready'
-                            : 'Ready at ${two(at.hour)}:${two(at.minute)} · ${DateTime.now().difference(at).inMinutes} min ago',
-                        style: const TextStyle(
-                          color: Color(0xFF8A8FA3),
-                          fontSize: 12,
+                        child: Text(
+                          at == null
+                              ? 'Ready'
+                              : 'Ready at ${two(at.hour)}:${two(at.minute)} · ${DateTime.now().difference(at).inMinutes} min ago',
+                          style: const TextStyle(
+                            color: Color(0xFF8A8FA3),
+                            fontSize: 12,
+                          ),
                         ),
-                      )),
+                      ),
                     ],
                   ),
                 ],
@@ -1727,8 +1732,11 @@ class _StationBoardState extends State<StationBoard> {
             'Tables the waiters have seated appear here.',
           )
         else
-          responsiveWrap(list.map((t) => stationTableCard(t, kitchen)).toList(),
-              minWidth: 300, sessionColumns: true),
+          responsiveWrap(
+            list.map((t) => stationTableCard(t, kitchen)).toList(),
+            minWidth: 300,
+            sessionColumns: true,
+          ),
       ],
     );
   }
@@ -1740,8 +1748,10 @@ class _StationBoardState extends State<StationBoard> {
         .where((x) => x.status == state)
         .fold<int>(0, (n, x) => n + x.quantity);
     final ready = units('Ready');
-    final minutes =
-        DateTime.now().difference(t.started!).inMinutes.clamp(0, 999999);
+    final minutes = DateTime.now()
+        .difference(t.started!)
+        .inMinutes
+        .clamp(0, 999999);
     final duration = minutes < 60
         ? '$minutes min'
         : '${minutes ~/ 60} h ${minutes % 60} min';
@@ -1749,121 +1759,176 @@ class _StationBoardState extends State<StationBoard> {
     final seatedAt =
         '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
     void details() => showDialog<void>(
-        context: context,
-        builder: (ctx) => Dialog(
-              backgroundColor: const Color(0xFFF5F7F6),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24)),
-              child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(maxWidth: 640, maxHeight: 760),
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
-                        child: Row(children: [
-                          Expanded(
-                              child: Text('${t.id} · Session details',
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700))),
-                          IconButton(
-                              tooltip: 'Close',
-                              onPressed: () => Navigator.pop(ctx),
-                              icon: const Icon(Icons.close)),
-                        ])),
-                    Flexible(
-                        child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(12),
-                            child: stationTableDetails(t, kitchen))),
-                  ])),
-            ));
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFFF5F7F6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640, maxHeight: 760),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 8, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${t.id} · Session details',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Close',
+                      onPressed: () => Navigator.pop(ctx),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(12),
+                  child: stationTableDetails(t, kitchen),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
     Widget badge(String label, Color background, Color foreground) => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-              color: background, borderRadius: BorderRadius.circular(24)),
-          child: Text('●  $label',
-              style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: foreground)),
-        );
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Text(
+        '●  $label',
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: foreground,
+        ),
+      ),
+    );
     return Material(
       color: Colors.white,
       elevation: 1,
       shadowColor: const Color(0x16000000),
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Color(0xFFE1E7E3))),
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Color(0xFFE1E7E3)),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-          onTap: details,
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        onTap: details,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Padding(
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Row(children: [
-                        Flexible(
-                            child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 10),
-                                decoration: BoxDecoration(
-                                    color: const Color(0xFFE4F3EB),
-                                    borderRadius: BorderRadius.circular(14)),
-                                child: Text(t.id,
-                                    style: const TextStyle(
-                                        color: green,
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.w800)))),
-                        const SizedBox(width: 8),
-                        if (ready > 0)
-                          badge('$ready ready', const Color(0xFFFFF4D7),
-                              const Color(0xFF8B6200)),
-                      ]),
-                      const SizedBox(height: 14),
-                      Text(
-                          '${t.guests} ${t.guests == 1 ? 'guest' : 'guests'} · $duration',
-                          style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 6),
-                      Text('Seated at $seatedAt',
-                          style: const TextStyle(fontSize: 14, color: muted)),
-                    ])),
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE4F3EB),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(
+                            t.id,
+                            style: const TextStyle(
+                              color: green,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      if (ready > 0)
+                        badge(
+                          '$ready ready',
+                          const Color(0xFFFFF4D7),
+                          const Color(0xFF8B6200),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    '${t.guests} ${t.guests == 1 ? 'guest' : 'guests'} · $duration',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Seated at $seatedAt',
+                    style: const TextStyle(fontSize: 14, color: muted),
+                  ),
+                ],
+              ),
+            ),
             const Divider(height: 1, color: Color(0xFFE1E7E3)),
             ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 104),
-                child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: total == 0
-                        ? const Text('Seated, nothing ordered yet.',
-                            style: TextStyle(color: muted, fontSize: 14))
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+              constraints: const BoxConstraints(minHeight: 104),
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: total == 0
+                    ? const Text(
+                        'Seated, nothing ordered yet.',
+                        style: TextStyle(color: muted, fontSize: 14),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$total ${total == 1 ? 'item' : 'items'}',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
                             children: [
-                                Text('$total ${total == 1 ? 'item' : 'items'}',
-                                    style: const TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.w700)),
-                                const SizedBox(height: 12),
-                                Wrap(spacing: 6, runSpacing: 6, children: [
-                                  for (final state in [
-                                    'New',
-                                    'Preparing',
-                                    'Ready',
-                                    'Served'
-                                  ])
-                                    if (units(state) > 0)
-                                      badge(
-                                          '${units(state)} ${state.toLowerCase()}',
-                                          state == 'Ready'
-                                              ? const Color(0xFFE4F3EB)
-                                              : const Color(0xFFF0F3F1),
-                                          state == 'Ready' ? green : muted),
-                                ]),
-                              ]))),
-          ])),
+                              for (final state in [
+                                'New',
+                                'Preparing',
+                                'Ready',
+                                'Served',
+                              ])
+                                if (units(state) > 0)
+                                  badge(
+                                    '${units(state)} ${state.toLowerCase()}',
+                                    state == 'Ready'
+                                        ? const Color(0xFFE4F3EB)
+                                        : const Color(0xFFF0F3F1),
+                                    state == 'Ready' ? green : muted,
+                                  ),
+                            ],
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1876,14 +1941,17 @@ class _StationBoardState extends State<StationBoard> {
         served = units((x) => x.status == 'Served');
     final open = total - done;
     final pending = items;
-    final orderNumbers = demoRestaurant.tickets
-        .where((ticket) =>
-            ticket.table == t.id &&
-            ticket.items.any((item) => items.contains(item)))
-        .map((ticket) => ticket.number)
-        .toSet()
-        .toList()
-      ..sort();
+    final orderNumbers =
+        demoRestaurant.tickets
+            .where(
+              (ticket) =>
+                  ticket.table == t.id &&
+                  ticket.items.any((item) => items.contains(item)),
+            )
+            .map((ticket) => ticket.number)
+            .toSet()
+            .toList()
+          ..sort();
     final mins = DateTime.now().difference(t.started!).inMinutes;
     final slow = mins >= 45;
     final hasAllergy = pending.any((x) => x.allergy);
@@ -1942,22 +2010,27 @@ class _StationBoardState extends State<StationBoard> {
                 open > 0
                     ? '$open preparing'
                     : total == 0
-                        ? 'Nothing yet'
-                        : 'All done',
+                    ? 'Nothing yet'
+                    : 'All done',
                 open == 0,
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Text('Started ${t.started!.toLocal().toString().substring(0, 16)}',
-              style: const TextStyle(fontSize: 12, color: muted)),
+          Text(
+            'Started ${t.started!.toLocal().toString().substring(0, 16)}',
+            style: const TextStyle(fontSize: 12, color: muted),
+          ),
           const SizedBox(height: 4),
           Text(
-              '${orderNumbers.length} orders · $total items · ${items.where((x) => x.status == 'Ready').fold<int>(0, (n, x) => n + x.quantity)} ready · $served served',
-              style: const TextStyle(fontSize: 12, color: muted)),
+            '${orderNumbers.length} orders · $total items · ${items.where((x) => x.status == 'Ready').fold<int>(0, (n, x) => n + x.quantity)} ready · $served served',
+            style: const TextStyle(fontSize: 12, color: muted),
+          ),
           if (orderNumbers.isNotEmpty)
-            Text('Orders: ${orderNumbers.map((n) => '#$n').join(', ')}',
-                style: const TextStyle(fontSize: 12, color: muted)),
+            Text(
+              'Orders: ${orderNumbers.map((n) => '#$n').join(', ')}',
+              style: const TextStyle(fontSize: 12, color: muted),
+            ),
           if (total > 0) ...[
             const SizedBox(height: 14),
             ClipRRect(
@@ -2003,8 +2076,9 @@ class _StationBoardState extends State<StationBoard> {
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         Text(
-                            '${x.dish.drink ? 'Bar' : 'Kitchen'}${x.optionsText.isEmpty ? '' : ' · ${x.optionsText}'}',
-                            style: const TextStyle(fontSize: 12, color: muted)),
+                          '${x.dish.drink ? 'Bar' : 'Kitchen'}${x.optionsText.isEmpty ? '' : ' · ${x.optionsText}'}',
+                          style: const TextStyle(fontSize: 12, color: muted),
+                        ),
                         if (x.allergy ||
                             kitchenPreparationNote(x.note).isNotEmpty)
                           Padding(
@@ -2013,7 +2087,7 @@ class _StationBoardState extends State<StationBoard> {
                               [
                                 if (x.allergy) 'ALLERGY',
                                 if (kitchenPreparationNote(x.note).isNotEmpty)
-                                  kitchenPreparationNote(x.note)
+                                  kitchenPreparationNote(x.note),
                               ].join(' · '),
                               style: TextStyle(
                                 fontSize: 12,
@@ -2057,15 +2131,21 @@ class _StationBoardState extends State<StationBoard> {
 
   Widget menuSection() {
     final all = stationDishes;
-    final sold = all.where(demoRestaurant.isSoldOut).length;
+    bool needsRestock(Dish d) =>
+        demoRestaurant.isSoldOut(d) || hasSoldOutKitchenVariants(d);
+    final sold = all.where(needsRestock).length;
+    final available = all.where((d) => !demoRestaurant.isSoldOut(d)).length;
     final q = menuQuery.trim().toLowerCase();
     final list = all
         .where(
           (d) =>
               (menuFilter == 'All' ||
-                  (menuFilter == 'Sold out') == demoRestaurant.isSoldOut(d)) &&
+                  (menuFilter == 'Sold out'
+                      ? needsRestock(d)
+                      : !demoRestaurant.isSoldOut(d))) &&
               (d.name.toLowerCase().contains(q) ||
-                  d.ticketName.toLowerCase().contains(q)),
+                  d.ticketName.toLowerCase().contains(q) ||
+                  d.kitchenVariations.any((g) => g.allOptions.any((o) => o.name.toLowerCase().contains(q)))),
         )
         .toList();
     return page([
@@ -2099,7 +2179,7 @@ class _StationBoardState extends State<StationBoard> {
           filterChip('All', all.length, menuFilter, (v) => menuFilter = v),
           filterChip(
             'Available',
-            all.length - sold,
+            available,
             menuFilter,
             (v) => menuFilter = v,
           ),
@@ -2111,7 +2191,7 @@ class _StationBoardState extends State<StationBoard> {
         child: Text(
           sold == 0
               ? 'Everything is available. Tap Sold out when an item runs out.'
-              : '$sold sold out · Waiters cannot add these to orders until you mark them available',
+              : '$sold products have sold-out items or variants. Restore the highlighted variants below.',
           style: TextStyle(
             color: sold == 0 ? const Color(0xFF8A8FA3) : Colors.red.shade700,
             fontSize: 13,
@@ -2125,7 +2205,11 @@ class _StationBoardState extends State<StationBoard> {
           'Try another search or filter.',
         )
       else
-        responsiveWrap(list.map(menuCard).toList(), minWidth: 300),
+        responsiveWrap(
+          list.map(menuCard).toList(),
+          minWidth: 280,
+          sessionColumns: true,
+        ),
     ]);
   }
 
@@ -2163,7 +2247,7 @@ class _StationBoardState extends State<StationBoard> {
                   children: [
                     Text(
                       d.ticketName,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 16,
@@ -2212,8 +2296,9 @@ class _StationBoardState extends State<StationBoard> {
                               out == soldOption ? null : () => toggleSoldOut(d),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Icon(
                                   soldOption
@@ -2245,6 +2330,7 @@ class _StationBoardState extends State<StationBoard> {
             ),
           ),
           variantRow(d),
+
         ],
       ),
     );
@@ -2253,77 +2339,62 @@ class _StationBoardState extends State<StationBoard> {
   // One fixed-height row on every card, so all dishes stay the same size. Dishes with variants
   // (portion, spice, extras...) open a sheet where each variant can be switched off or on.
   Widget variantRow(Dish d) {
-    if (d.kitchenVariations.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 12),
-        child: SizedBox(
-          height: 44,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Whole product only',
-              style: TextStyle(color: Color(0xFFB0B6BF), fontSize: 13),
-            ),
-          ),
-        ),
-      );
-    }
-    final dishOut = demoRestaurant.soldOut.contains(d.name);
-    final all = [for (final g in d.kitchenVariations) ...g.allOptions];
-    final outN = dishOut ? all.length : all.where((o) => !o.available).length;
+    final options = [for (final g in d.kitchenVariations) ...g.allOptions];
+    final unavailable = options.where((o) => !o.available).toList();
+    final wholeOut = demoRestaurant.soldOut.contains(d.name);
+    final needsRestock = wholeOut || unavailable.isNotEmpty;
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Material(
-        color: Colors.white,
+        color: needsRestock && options.isNotEmpty
+            ? const Color(0xFFFFF3D6)
+            : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFFD5DDD8), width: 1.5),
+          side: BorderSide(
+            color: options.isEmpty ? Colors.transparent : const Color(0xFFD5DDD8),
+          ),
         ),
         child: InkWell(
-          customBorder: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          onTap: () => openVariants(d),
-          child: SizedBox(
-            height: 44,
+          borderRadius: BorderRadius.circular(14),
+          onTap: options.isEmpty ? null : () => openVariants(d),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 56),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.tune_rounded, size: 18, color: green),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Variants · ${all.length}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (outN > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFBE4E1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        outN == all.length ? 'all sold out' : '$outN sold out',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.red.shade700,
+                  if (options.isNotEmpty) ...[
+                    const Icon(Icons.tune_rounded, size: 18, color: green),
+                    const SizedBox(width: 8),
+                  ],
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          options.isEmpty ? 'Whole product only' : 'Variants · ${options.length}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 14,
+                            fontWeight: options.isEmpty ? FontWeight.w400 : FontWeight.w700,
+                            color: options.isEmpty ? const Color(0xFF8A8FA3) : ink),
                         ),
-                      ),
+                        if (options.isNotEmpty && needsRestock) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            wholeOut ? 'Whole product sold out' : '${unavailable.map((o) => o.name).join(', ')} · sold out',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF805800)),
+                          ),
+                        ],
+                      ],
                     ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.expand_more_rounded,
-                    color: Color(0xFF8A8FA3),
                   ),
+                  if (options.isNotEmpty)
+                    const Icon(Icons.chevron_right_rounded, color: green),
                 ],
               ),
             ),
@@ -2335,95 +2406,175 @@ class _StationBoardState extends State<StationBoard> {
 
   // Tap a variant to mark it sold out for everyone (waiters, online ordering, Mission Control);
   // tap again to bring it back. When the whole dish is sold out, all its variants show as sold out.
-  void openVariants(Dish d) => showModalBottomSheet<void>(
+  void openVariants(Dish d) {
+    Widget content(BuildContext ctx) => StatefulBuilder(
+      builder: (ctx, set) {
+        final dishOut = demoRestaurant.soldOut.contains(d.name);
+        return SafeArea(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * .8,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(d.emoji, style: const TextStyle(fontSize: 28)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          d.ticketName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    dishOut
+                        ? 'This dish is sold out, so all its variants are sold out too.'
+                        : 'Tap a variant to mark it sold out. Tap again to make it available.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: dishOut
+                          ? Colors.red.shade700
+                          : const Color(0xFF8A8FA3),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  for (final g in d.kitchenVariations)
+                    for (final o in g.allOptions.where((o) => !o.available))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3D6),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFE8CB82)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${g.name} · SOLD OUT',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF805800),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                o.name,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              if (demoRestaurant.soldOut.contains(d.name))
+                                const Text(
+                                  'Make the whole product available first.',
+                                )
+                              else
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FilledButton.icon(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: green,
+                                      minimumSize: const Size(0, 48),
+                                    ),
+                                    onPressed: () {
+                                      toggleVariant(d, o, () {
+                                        if (ctx.mounted) set(() {});
+                                      });
+                                      set(() {});
+                                    },
+                                    icon: const Icon(
+                                      Icons.check_circle_outline,
+                                      size: 18,
+                                    ),
+                                    label: const Text('Make available'),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  const SizedBox(height: 16),
+                  for (final g in d.kitchenVariations) ...[
+                    Text(
+                      g.name.toUpperCase(),
+                      style: const TextStyle(
+                        color: Color(0xFF8A8FA3),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: .8,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      children: [
+                        for (final o in g.allOptions)
+                          variantChip(
+                            d,
+                            o,
+                            locked: dishOut,
+                            onChange: () => set(() {}),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (MediaQuery.sizeOf(context).width >= 600) {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => Dialog(
+          insetPadding: const EdgeInsets.all(24),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: content(ctx),
+          ),
+        ),
+      );
+    } else {
+      showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, set) {
-            final dishOut = demoRestaurant.soldOut.contains(d.name);
-            return SafeArea(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(ctx).size.height * .8,
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(d.emoji, style: const TextStyle(fontSize: 28)),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              d.ticketName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            icon: const Icon(Icons.close_rounded),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        dishOut
-                            ? 'This dish is sold out, so all its variants are sold out too.'
-                            : 'Tap a variant to mark it sold out. Tap again to make it available.',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: dishOut
-                              ? Colors.red.shade700
-                              : const Color(0xFF8A8FA3),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      for (final g in d.kitchenVariations) ...[
-                        Text(
-                          g.name.toUpperCase(),
-                          style: const TextStyle(
-                            color: Color(0xFF8A8FA3),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: .8,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 10,
-                          runSpacing: 10,
-                          children: [
-                            for (final o in g.allOptions)
-                              variantChip(
-                                d,
-                                o,
-                                locked: dishOut,
-                                onChange: () => set(() {}),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+        builder: content,
       );
+    }
+  }
 
   Widget variantChip(
     Dish d,
@@ -2464,8 +2615,9 @@ class _StationBoardState extends State<StationBoard> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color:
-                      out ? const Color(0xFF8C3B36) : const Color(0xFF23263A),
+                  color: out
+                      ? const Color(0xFF8C3B36)
+                      : const Color(0xFF23263A),
                   decoration: out ? TextDecoration.lineThrough : null,
                 ),
               ),

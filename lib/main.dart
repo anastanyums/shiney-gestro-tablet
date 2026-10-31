@@ -13,8 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'waiter_demo.dart';
 import 'station_board.dart';
 import 'toast.dart';
-import 'food_art.dart'
-    as pos_terminal; // POS terminal screens (checkout, orders, invoices, printer)
+import 'food_art.dart' as pos_terminal; // POS terminal screens (checkout, orders, invoices, printer)
 
 // Shiney Gestro tablet app. After installing, staff choose a role (Service, Kitchen, Barkeeper, POS)
 // and activate it once by scanning a one-time QR code (valid 15 minutes) from Mission Control → Devices.
@@ -45,56 +44,56 @@ Future<void> main() async {
   await Supabase.initialize(url: supabaseUrl, anonKey: supabasePublishableKey);
   serviceLoyalty =
       (table, {code, offerId, removeItemId, options, registration}) async {
-    final sync = demoRestaurant.sync;
-    if (sync is SupabaseSync) await sync.idle;
-    final sid = table.sessionId;
-    if (sid == null) throw Exception('Open a table before scanning');
-    try {
-      if (registration != null) {
-        final raw = await supa.rpc(
-          'register_loyalty_card',
-          params: {
-            'p_session': sid,
-            'p_code': code,
-            'p_name': registration['name'],
-            'p_phone': registration['phone'],
-            'p_birth': registration['birth'],
-            'p_email': registration['email'],
-          },
-        );
-        return Map<String, dynamic>.from(raw as Map);
-      }
-      if (removeItemId != null) {
-        await supa.rpc(
-          'loyalty_remove_reward',
-          params: {'p_session': sid, 'p_item': removeItemId},
-        );
-        if (currentRestaurantId != null)
-          await refreshService(currentRestaurantId!);
-      }
-      if (offerId != null) {
-        await supa.rpc(
-          'loyalty_use_reward',
-          params: {
-            'p_session': sid,
-            'p_offer': offerId,
-            'p_options': options,
-          },
-        );
-        if (currentRestaurantId != null)
-          await refreshService(currentRestaurantId!);
-      }
-      final raw = await supa.rpc(
-        'loyalty_session',
-        params: {'p_session': sid, if (code != null) 'p_code': code},
-      );
-      return Map<String, dynamic>.from(raw as Map);
-    } on PostgrestException catch (e) {
-      final rid = currentRestaurantId;
-      if (rid != null) await refreshLoyaltySettings(rid);
-      throw Exception(e.message);
-    }
-  };
+        final sync = demoRestaurant.sync;
+        if (sync is SupabaseSync) await sync.idle;
+        final sid = table.sessionId;
+        if (sid == null) throw Exception('Open a table before scanning');
+        try {
+          if (registration != null) {
+            final raw = await supa.rpc(
+              'register_loyalty_card',
+              params: {
+                'p_session': sid,
+                'p_code': code,
+                'p_name': registration['name'],
+                'p_phone': registration['phone'],
+                'p_birth': registration['birth'],
+                'p_email': registration['email'],
+              },
+            );
+            return Map<String, dynamic>.from(raw as Map);
+          }
+          if (removeItemId != null) {
+            await supa.rpc(
+              'loyalty_remove_reward',
+              params: {'p_session': sid, 'p_item': removeItemId},
+            );
+            if (currentRestaurantId != null)
+              await refreshService(currentRestaurantId!);
+          }
+          if (offerId != null) {
+            await supa.rpc(
+              'loyalty_use_reward',
+              params: {
+                'p_session': sid,
+                'p_offer': offerId,
+                'p_options': options,
+              },
+            );
+            if (currentRestaurantId != null)
+              await refreshService(currentRestaurantId!);
+          }
+          final raw = await supa.rpc(
+            'loyalty_session',
+            params: {'p_session': sid, if (code != null) 'p_code': code},
+          );
+          return Map<String, dynamic>.from(raw as Map);
+        } on PostgrestException catch (e) {
+          final rid = currentRestaurantId;
+          if (rid != null) await refreshLoyaltySettings(rid);
+          throw Exception(e.message);
+        }
+      };
   makeServiceVoucherRequestId = newId;
   lookupServiceVoucher = (code) async {
     try {
@@ -124,9 +123,8 @@ Future<void> main() async {
       return result;
     } on PostgrestException catch (e) {
       // Only confirmed database rejections unlock a changed payment attempt.
-      if (RegExp(
-        r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$',
-      ).hasMatch(e.code ?? '')) {
+      if (RegExp(r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$')
+          .hasMatch(e.code ?? '')) {
         throw VoucherPaymentRejected(e.message);
       }
       rethrow;
@@ -148,9 +146,8 @@ Future<void> main() async {
       final raw = await supa.rpc('charge_service_voucher', params: request);
       return Map<String, dynamic>.from(raw as Map);
     } on PostgrestException catch (e) {
-      if (RegExp(
-        r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$',
-      ).hasMatch(e.code ?? '')) {
+      if (RegExp(r'^(P0001|42501|22[A-Z0-9]{3}|23[A-Z0-9]{3})$')
+          .hasMatch(e.code ?? '')) {
         throw VoucherPaymentRejected(e.message);
       }
       rethrow;
@@ -170,64 +167,65 @@ class ShineyGestroApp extends StatelessWidget {
   const ShineyGestroApp({super.key});
   @override
   Widget build(BuildContext context) => MaterialApp(
-        title: 'Shiney Gestro',
-        debugShowCheckedModeBanner: false,
-        theme: walletTheme(),
-        // Every non-production build shows a corner ribbon, so a staging tablet is never mistaken for a live one.
-        builder: (context, child) => isProduction
-            ? child!
-            : Banner(
-                message: appEnv.toUpperCase(),
-                location: BannerLocation.topEnd,
-                color: const Color(0xFFD99A1E),
-                child: child!,
+    title: 'Shiney Gestro',
+    debugShowCheckedModeBanner: false,
+    theme: walletTheme(),
+    // Every non-production build shows a corner ribbon, so a staging tablet is never mistaken for a live one.
+    builder: (context, child) => isProduction
+        ? child!
+        : Banner(
+            message: appEnv.toUpperCase(),
+            location: BannerLocation.topEnd,
+            color: const Color(0xFFD99A1E),
+            child: child!,
+          ),
+    home:
+        kDebugMode &&
+            kIsWeb &&
+            Uri.base.queryParameters['previewNotifications'] == '1'
+        ? const NotificationPreview()
+        : kDebugMode &&
+              kIsWeb &&
+              Uri.base.queryParameters['previewCollection'] == '1'
+        ? const CollectionTimePreview()
+        : kDebugMode &&
+              kIsWeb &&
+              Uri.base.queryParameters['previewGuest'] == '1'
+        ? const pos_terminal.GuestDetailsPreview()
+        : kDebugMode &&
+              kIsWeb &&
+              Uri.base.queryParameters['previewProduct'] == '1'
+        ? const pos_terminal.PosProductPreview()
+        : kDebugMode &&
+              kIsWeb &&
+              Uri.base.queryParameters['previewUpdate'] == '1'
+        ? const DailyAppUpdate(
+            child: Scaffold(
+              backgroundColor: Colors.white,
+              body: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShineyBrandMark(size: 44),
+                      SizedBox(height: 16),
+                      Text(
+                        'Shiney Gestro',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text('Update notification · test preview'),
+                    ],
+                  ),
+                ),
               ),
-        home: kDebugMode && kIsWeb && Uri.base.queryParameters['previewNotifications'] == '1'
-            ? const NotificationPreview()
-            : kDebugMode &&
-                kIsWeb &&
-                Uri.base.queryParameters['previewCollection'] == '1'
-            ? const CollectionTimePreview()
-            : kDebugMode &&
-                    kIsWeb &&
-                    Uri.base.queryParameters['previewGuest'] == '1'
-                ? const pos_terminal.GuestDetailsPreview()
-                : kDebugMode &&
-                        kIsWeb &&
-                        Uri.base.queryParameters['previewProduct'] == '1'
-                    ? const pos_terminal.PosProductPreview()
-                    : kDebugMode &&
-                            kIsWeb &&
-                            Uri.base.queryParameters['previewUpdate'] == '1'
-                        ? const DailyAppUpdate(
-                            child: Scaffold(
-                              backgroundColor: Colors.white,
-                              body: SafeArea(
-                                child: Padding(
-                                  padding: EdgeInsets.all(24),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      ShineyBrandMark(size: 44),
-                                      SizedBox(height: 16),
-                                      Text(
-                                        'Shiney Gestro',
-                                        style: TextStyle(
-                                          fontSize: 26,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      Text(
-                                          'Update notification · test preview'),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        : const DeviceGate(),
-      );
+            ),
+          )
+        : const DeviceGate(),
+  );
 }
 
 Widget brandMark({double size = 56}) => ShineyBrandMark(size: size);
@@ -341,10 +339,9 @@ Future<void> loadMenu(String rid) async {
       if (g == null) continue;
       final all = options.where((o) => o['group_id'] == g['id']).toList()
         ..sort(order);
-      final mine = own
-          .where((r) => all.any((o) => o['id'] == r['option_id']))
-          .toList()
-        ..sort(order);
+      final mine =
+          own.where((r) => all.any((o) => o['id'] == r['option_id'])).toList()
+            ..sort(order);
       final opts = <VariationOption>[];
       if (mine.isEmpty) {
         for (final o in all) {
@@ -355,7 +352,8 @@ Future<void> loadMenu(String rid) async {
               (o['price_delta_cents'] as int?) ?? 0,
               isDefault: o['is_default'] == true,
               menuItemId: m['id'] as String,
-              available: (m['availability_group_id'] == g['id'] ||
+              available:
+                  (m['availability_group_id'] == g['id'] ||
                       o['available'] == true) &&
                   !stockRows.any(
                     (s) =>
@@ -370,7 +368,8 @@ Future<void> loadMenu(String rid) async {
       } else {
         for (final r in mine) {
           final o = all.firstWhere((o) => o['id'] == r['option_id']);
-          final full = (r['price_cents'] as int?) ??
+          final full =
+              (r['price_cents'] as int?) ??
               price + ((o['price_delta_cents'] as int?) ?? 0);
           opts.add(
             VariationOption(
@@ -379,7 +378,8 @@ Future<void> loadMenu(String rid) async {
               full - price,
               isDefault: r['is_default'] == true,
               menuItemId: m['id'] as String,
-              available: (m['availability_group_id'] == g['id'] ||
+              available:
+                  (m['availability_group_id'] == g['id'] ||
                       o['available'] == true) &&
                   !stockRows.any(
                     (s) =>
@@ -427,24 +427,25 @@ Future<void> loadMenu(String rid) async {
           ].join('/');
     final itemLinks = links.where((l) => l['menu_item_id'] == m['id']).toList()
       ..sort(order);
-    final dish = Dish(
-      m['name'] as String,
-      path.last,
-      (m['emoji'] as String?) ?? '🍽️',
-      m['price_cents'] as int,
-      id: m['id'] as String,
-      station: m['station'] as String,
-      workstationId: m['workstation_id'] as String?,
-    )
-      ..path = path
-      ..imageUrl = m['image_url'] as String?
-      ..kitchenColor = m['kitchen_color'] as String?
-      ..kitchenName = m['kitchen_name'] as String?
-      ..kitchenAvailabilityGroupId = m['availability_group_id'] as String?
-      ..diet = m['diet'] as String?
-      ..spiceLevel = (m['spice_level'] as num?)?.toInt()
-      ..allergens = List<String>.from(m['allergens'] as List? ?? const [])
-      ..allVariations = variationsFor(m, itemLinks);
+    final dish =
+        Dish(
+            m['name'] as String,
+            path.last,
+            (m['emoji'] as String?) ?? '🍽️',
+            m['price_cents'] as int,
+            id: m['id'] as String,
+            station: m['station'] as String,
+            workstationId: m['workstation_id'] as String?,
+          )
+          ..path = path
+          ..imageUrl = m['image_url'] as String?
+          ..kitchenColor = m['kitchen_color'] as String?
+          ..kitchenName = m['kitchen_name'] as String?
+          ..kitchenAvailabilityGroupId = m['availability_group_id'] as String?
+          ..diet = m['diet'] as String?
+          ..spiceLevel = (m['spice_level'] as num?)?.toInt()
+          ..allergens = List<String>.from(m['allergens'] as List? ?? const [])
+          ..allVariations = variationsFor(m, itemLinks);
     built.add((key, dish));
   }
   built.sort((a, b) {
@@ -511,8 +512,9 @@ Future<DeviceContext?> loadDevice() async {
   // Kitchen/bar marking sold out on this tablet updates the restaurant's menu for everyone.
   demoRestaurant.onSoldOutChanged = (d, out) {
     if (d.id != null)
-      supa.rpc('set_sold_out',
-          params: {'item_id': d.id, 'is_sold_out': out}).catchError((_) {});
+      supa
+          .rpc('set_sold_out', params: {'item_id': d.id, 'is_sold_out': out})
+          .catchError((_) {});
   };
   // Save sessions, orders and payments to Supabase, and reopen tables still in service.
   demoRestaurant.sync = SupabaseSync(rid);
@@ -525,8 +527,7 @@ Future<DeviceContext?> loadDevice() async {
     mode: device['mode'] as String,
     station: device['station'] as String?,
   );
-  kioskLocked =
-      true; // every tablet is locked to the job it was created for in Mission Control
+  kioskLocked = true; // every tablet is locked to the job it was created for in Mission Control
   return ctx;
 }
 
@@ -728,8 +729,16 @@ class _DeviceGateState extends State<DeviceGate> {
 
   // Live updates from the admin panel and the other tablets: menu, categories, variations,
   // and the service itself (tables, orders, kitchen/bar status, payments). Plus an online heartbeat.
-  Timer? menuDebounce, serviceDebounce, workstationDebounce;
+  Timer? menuDebounce, serviceDebounce, workstationDebounce, fallbackTimer;
   void startLive() {
+    stopLive();
+    final restaurantId = currentRestaurantId;
+    if (restaurantId == null) return;
+    final restaurantFilter = PostgresChangeFilter(
+      type: PostgresChangeFilterType.eq,
+      column: 'restaurant_id',
+      value: restaurantId,
+    );
     bool menuRefreshing = false, imageCheckRunning = false;
     Future<void> refreshMenuNow() async {
       final rid = currentRestaurantId;
@@ -780,7 +789,8 @@ class _DeviceGateState extends State<DeviceGate> {
         };
         if (!mapEquals(remote, local) ||
             !mapEquals(colours, kitchenColoursByDishId) ||
-            !mapEquals(kNames, localKNames)) await refreshMenuNow();
+            !mapEquals(kNames, localKNames))
+          await refreshMenuNow();
       } catch (e) {
         debugPrint('Menu image sync failed: $e');
       } finally {
@@ -855,6 +865,11 @@ class _DeviceGateState extends State<DeviceGate> {
       event: PostgresChangeEvent.update,
       schema: 'public',
       table: 'restaurants',
+      filter: PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'id',
+        value: restaurantId,
+      ),
       callback: (_) => reloadCharges(),
     );
     channel = channel.onPostgresChanges(
@@ -875,6 +890,7 @@ class _DeviceGateState extends State<DeviceGate> {
       event: PostgresChangeEvent.all,
       schema: 'public',
       table: 'workstations',
+      filter: restaurantFilter,
       callback: (_) => reloadWorkstations(),
     );
     for (final t in [
@@ -890,6 +906,7 @@ class _DeviceGateState extends State<DeviceGate> {
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: t,
+        filter: restaurantFilter,
         callback: (_) => reloadMenu(),
       );
     }
@@ -898,13 +915,30 @@ class _DeviceGateState extends State<DeviceGate> {
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: t,
+        filter: restaurantFilter,
         callback: (_) => reloadService(),
       );
     }
-    menuChannel = channel.subscribe();
+    void reloadAll() {
+      if (!mounted || currentRestaurantId != restaurantId) return;
+      reloadMenu();
+      reloadService();
+      reloadWorkstations();
+      reloadCharges();
+    }
+
+    menuChannel = channel.subscribe((status, _) {
+      if (status == RealtimeSubscribeStatus.subscribed) reloadAll();
+    });
+    fallbackTimer = Timer.periodic(
+      const Duration(seconds: 60),
+      (_) => reloadAll(),
+    );
     // Online heartbeat. Mission Control → Devices → Disconnect logs a role out: the ping then
     // answers false and the device goes back to the role chooser within 30 seconds.
-    void beat() => supa.rpc('device_ping').then((ok) {
+    void beat() => supa
+        .rpc('device_ping')
+        .then((ok) {
           if (ok == false) {
             supa.auth.signOut();
             return;
@@ -919,7 +953,8 @@ class _DeviceGateState extends State<DeviceGate> {
             });
           // A new assignment from Mission Control reaches this tablet within 30 seconds.
           if (workstations.length > 1) reloadWorkstations(now: true);
-        }).catchError((e) {
+        })
+        .catchError((e) {
           // The admin disconnected this role: its login no longer exists.
           if (e is PostgrestException &&
               (e.code == 'PGRST301' ||
@@ -932,6 +967,8 @@ class _DeviceGateState extends State<DeviceGate> {
   }
 
   void stopLive() {
+    fallbackTimer?.cancel();
+    fallbackTimer = null;
     heartbeat?.cancel();
     heartbeat = null;
     menuDebounce?.cancel();
@@ -976,8 +1013,7 @@ class _DeviceGateState extends State<DeviceGate> {
           return DeviceMessage(
             icon: Icons.pause_circle_outline,
             title: 'Restaurant suspended',
-            message:
-                'This restaurant is paused on Shiney Gestro. Ask the restaurant owner to contact support.',
+            message: 'This restaurant is paused on Shiney Gestro. Ask the restaurant owner to contact support.',
             onRoles: openRoles,
           );
         }
@@ -985,8 +1021,7 @@ class _DeviceGateState extends State<DeviceGate> {
           return DeviceMessage(
             icon: Icons.wifi_off,
             title: 'No connection',
-            message:
-                'Could not load your restaurant. Check the Wi-Fi and try again.',
+            message: 'Could not load your restaurant. Check the Wi-Fi and try again.',
             action: FilledButton(
               onPressed: () => setState(() => device = loadDevice()),
               style: FilledButton.styleFrom(backgroundColor: forest),
@@ -1000,8 +1035,7 @@ class _DeviceGateState extends State<DeviceGate> {
           return const DeviceMessage(
             icon: Icons.link_off,
             title: 'Role disconnected',
-            message:
-                'This role is no longer connected to a restaurant. Activate it again with a new QR code.',
+            message: 'This role is no longer connected to a restaurant. Activate it again with a new QR code.',
             forget: true,
           );
         }
@@ -1039,42 +1073,42 @@ class DeviceMessage extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) => Scaffold(
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Padding(
-              padding: const EdgeInsets.all(28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 52, color: forest),
-                  const SizedBox(height: 16),
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    message,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: muted, height: 1.5),
-                  ),
-                  const SizedBox(height: 22),
-                  if (action != null) ...[action!, const SizedBox(height: 8)],
-                  TextButton.icon(
-                    onPressed: forget ? () => supa.auth.signOut() : onRoles,
-                    icon: const Icon(Icons.swap_horiz_rounded),
-                    label: const Text('Choose a role'),
-                  ),
-                ],
+    body: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 52, color: forest),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: muted, height: 1.5),
+              ),
+              const SizedBox(height: 22),
+              if (action != null) ...[action!, const SizedBox(height: 8)],
+              TextButton.icon(
+                onPressed: forget ? () => supa.auth.signOut() : onRoles,
+                icon: const Icon(Icons.swap_horiz_rounded),
+                label: const Text('Choose a role'),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1148,8 +1182,9 @@ class _RoleHubState extends State<RoleHub> {
               padding: EdgeInsets.all(inset),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight:
-                      portrait ? 0 : max(0.0, viewport.maxHeight - inset * 2),
+                  minHeight: portrait
+                      ? 0
+                      : max(0.0, viewport.maxHeight - inset * 2),
                 ),
                 child: Center(
                   child: ConstrainedBox(
@@ -1202,27 +1237,32 @@ class _RoleHubState extends State<RoleHub> {
                         SizedBox(height: compact ? 18 : 24),
                         LayoutBuilder(
                           builder: (context, c) {
-                            final columns =
-                                !portrait && c.maxWidth >= 560 ? 2 : 1;
+                            final columns = !portrait && c.maxWidth >= 560
+                                ? 2
+                                : 1;
                             const gap = 16.0;
                             return Column(
                               children: [
-                                for (var i = 0;
-                                    i < deviceRoles.length;
-                                    i += columns) ...[
+                                for (
+                                  var i = 0;
+                                  i < deviceRoles.length;
+                                  i += columns
+                                ) ...[
                                   if (i > 0) const SizedBox(height: gap),
                                   IntrinsicHeight(
                                     child: Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.stretch,
                                       children: [
-                                        for (var j = i;
-                                            j <
-                                                min(
-                                                  i + columns,
-                                                  deviceRoles.length,
-                                                );
-                                            j++) ...[
+                                        for (
+                                          var j = i;
+                                          j <
+                                              min(
+                                                i + columns,
+                                                deviceRoles.length,
+                                              );
+                                          j++
+                                        ) ...[
                                           if (j > i) const SizedBox(width: gap),
                                           Expanded(
                                             child: roleCard(
@@ -1287,7 +1327,11 @@ class _RoleHubState extends State<RoleHub> {
     return Semantics(
       button: true,
       label:
-          '${r.title}. ${current ? "Currently in use" : active ? "Activated" : "Scan QR to activate"}',
+          '${r.title}. ${current
+              ? "Currently in use"
+              : active
+              ? "Activated"
+              : "Scan QR to activate"}',
       child: Material(
         color: current ? mint : Colors.white,
         shape: RoundedRectangleBorder(
@@ -1389,8 +1433,8 @@ class _RoleHubState extends State<RoleHub> {
                             current
                                 ? 'Currently in use'
                                 : active
-                                    ? 'Ready to open'
-                                    : 'Scan QR to activate',
+                                ? 'Ready to open'
+                                : 'Scan QR to activate',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -1434,9 +1478,8 @@ class _RoleSetupPageState extends State<RoleSetupPage> {
       role.station == 'pos' ? 'POS terminal' : '${role.title} tablet';
 
   Future<void> scan() async {
-    final value = await Navigator.of(
-      context,
-    ).push<String>(MaterialPageRoute(builder: (_) => const ScannerPage()));
+    final value = await Navigator.of(context)
+        .push<String>(MaterialPageRoute(builder: (_) => const ScannerPage()));
     if (value != null) await pair(value);
   }
 
@@ -1494,9 +1537,7 @@ class _RoleSetupPageState extends State<RoleSetupPage> {
       final d = e.details;
       if (mounted)
         setState(
-          () => error = d is Map && d['error'] != null
-              ? d['error'].toString()
-              : 'This QR code could not be used. Create a new one in Mission Control.',
+          () => error = d is Map && d['error'] != null ? d['error'].toString() : 'This QR code could not be used. Create a new one in Mission Control.',
         );
     } catch (_) {
       if (mounted)
@@ -1510,132 +1551,128 @@ class _RoleSetupPageState extends State<RoleSetupPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.transparent,
-          title: const Text('All roles'),
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: ListView(
-              shrinkWrap: true,
-              padding: const EdgeInsets.all(28),
-              children: [
-                Center(
-                  child: Container(
-                    width: 76,
-                    height: 76,
-                    decoration: BoxDecoration(
-                      color: mint,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Icon(role.icon, color: forest, size: 38),
-                  ),
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      title: const Text('All roles'),
+    ),
+    body: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: ListView(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(28),
+          children: [
+            Center(
+              child: Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  color: mint,
+                  borderRadius: BorderRadius.circular(24),
                 ),
-                const SizedBox(height: 18),
-                Text(
-                  'Activate ${role.title}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -.5,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  role.text,
-                  textAlign: TextAlign.center,
-                  style:
-                      const TextStyle(fontSize: 15, color: muted, height: 1.4),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(
-                    color: surface,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _Step(
-                        n: '1',
-                        text:
-                            'On a computer, open Shiney Gestro Mission Control.',
-                      ),
-                      _Step(
-                        n: '2',
-                        text:
-                            'Go to Devices and add a $tabletName. A QR code appears.',
-                      ),
-                      const _Step(
-                        n: '3',
-                        text:
-                            'Tap the button below and scan it. You only do this once.',
-                      ),
-                    ],
-                  ),
-                ),
-                if (error != null)
-                  Container(
-                    margin: const EdgeInsets.only(top: 16),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFBEDEC),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.error_outline, color: Colors.red.shade700),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            error!,
-                            style: TextStyle(color: Colors.red.shade800),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 22),
-                FilledButton.icon(
-                  onPressed: busy ? null : scan,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: forest,
-                    minimumSize: const Size.fromHeight(60),
-                    shape: const StadiumBorder(),
-                  ),
-                  icon: busy
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.qr_code_scanner, size: 26),
-                  label: Text(
-                    busy ? 'Activating…' : 'Scan QR code',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextButton(
-                  onPressed: busy ? null : enterCode,
-                  child:
-                      const Text('Camera not working? Enter the code instead'),
-                ),
-              ],
+                child: Icon(role.icon, color: forest, size: 38),
+              ),
             ),
-          ),
+            const SizedBox(height: 18),
+            Text(
+              'Activate ${role.title}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              role.text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 15, color: muted, height: 1.4),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: surface,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _Step(
+                    n: '1',
+                    text: 'On a computer, open Shiney Gestro Mission Control.',
+                  ),
+                  _Step(
+                    n: '2',
+                    text:
+                        'Go to Devices and add a $tabletName. A QR code appears.',
+                  ),
+                  const _Step(
+                    n: '3',
+                    text: 'Tap the button below and scan it. You only do this once.',
+                  ),
+                ],
+              ),
+            ),
+            if (error != null)
+              Container(
+                margin: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFBEDEC),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        error!,
+                        style: TextStyle(color: Colors.red.shade800),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 22),
+            FilledButton.icon(
+              onPressed: busy ? null : scan,
+              style: FilledButton.styleFrom(
+                backgroundColor: forest,
+                minimumSize: const Size.fromHeight(60),
+                shape: const StadiumBorder(),
+              ),
+              icon: busy
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.qr_code_scanner, size: 26),
+              label: Text(
+                busy ? 'Activating…' : 'Scan QR code',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextButton(
+              onPressed: busy ? null : enterCode,
+              child: const Text('Camera not working? Enter the code instead'),
+            ),
+          ],
         ),
-      );
+      ),
+    ),
+  );
 }
 
 class _Step extends StatelessWidget {
@@ -1643,32 +1680,32 @@ class _Step extends StatelessWidget {
   const _Step({required this.n, required this.text});
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 13,
-              backgroundColor: mint,
-              child: Text(
-                n,
-                style: const TextStyle(
-                  color: forest,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          radius: 13,
+          backgroundColor: mint,
+          child: Text(
+            n,
+            style: const TextStyle(
+              color: forest,
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(text, style: const TextStyle(height: 1.4)),
-              ),
-            ),
-          ],
+          ),
         ),
-      );
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 3),
+            child: Text(text, style: const TextStyle(height: 1.4)),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class ScannerPage extends StatefulWidget {
@@ -1700,8 +1737,7 @@ class _ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
     } catch (_) {
       if (mounted)
         setState(
-          () => scanError =
-              'Camera unavailable. Allow camera access in your browser or device settings, then try again. You can also enter the pairing code manually.',
+          () => scanError = 'Camera unavailable. Allow camera access in your browser or device settings, then try again. You can also enter the pairing code manually.',
         );
     }
   }
@@ -1741,8 +1777,7 @@ class _ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
       }
     }
     setState(
-      () => scanError =
-          'This is not a device activation QR code. Use the code from Mission Control → Devices.',
+      () => scanError = 'This is not a device activation QR code. Use the code from Mission Control → Devices.',
     );
   }
 
@@ -1791,47 +1826,47 @@ class _ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.transparent,
-          foregroundColor: forest,
-          title: const Text('Scan activation QR code'),
-        ),
-        body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 480),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                children: [
-                  const Text(
-                    'Activate this role',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Open Mission Control → Devices and create a QR code for this role. Place it inside the camera area below.',
-                    style: TextStyle(color: muted, height: 1.5),
-                  ),
-                  const SizedBox(height: 24),
-                  Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 320),
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              ColoredBox(
-                                color: const Color(0xFF173C2D),
-                                child: MobileScanner(
-                                  controller: controller,
-                                  onDetect: onDetect,
-                                  errorBuilder: (context, error, [child]) =>
-                                      const Center(
+    backgroundColor: Colors.white,
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      foregroundColor: forest,
+      title: const Text('Scan activation QR code'),
+    ),
+    body: SafeArea(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            children: [
+              const Text(
+                'Activate this role',
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Open Mission Control → Devices and create a QR code for this role. Place it inside the camera area below.',
+                style: TextStyle(color: muted, height: 1.5),
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 320),
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ColoredBox(
+                            color: const Color(0xFF173C2D),
+                            child: MobileScanner(
+                              controller: controller,
+                              onDetect: onDetect,
+                              errorBuilder: (context, error, [child]) =>
+                                  const Center(
                                     child: Padding(
                                       padding: EdgeInsets.all(28),
                                       child: Column(
@@ -1864,87 +1899,87 @@ class _ScannerPageState extends State<ScannerPage> with WidgetsBindingObserver {
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
-                              IgnorePointer(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: Colors.white70,
-                                        width: 2,
-                                      ),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                          IgnorePointer(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.white70,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.qr_code_scanner, size: 18, color: forest),
-                      SizedBox(width: 8),
-                      Text(
-                        'Keep the QR code steady',
-                        style: TextStyle(
-                          color: forest,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Activation starts automatically when the code is detected.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: muted, height: 1.5),
-                  ),
-                  if (scanError != null) ...[
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFF4D6),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        scanError!,
-                        style: const TextStyle(
-                          color: Color(0xFF8A6100),
-                          height: 1.4,
-                        ),
-                      ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.qr_code_scanner, size: 18, color: forest),
+                  SizedBox(width: 8),
+                  Text(
+                    'Keep the QR code steady',
+                    style: TextStyle(
+                      color: forest,
+                      fontWeight: FontWeight.w600,
                     ),
-                    TextButton(
-                      onPressed: startCamera,
-                      child: const Text('Try camera again'),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  OutlinedButton.icon(
-                    onPressed: enterCode,
-                    icon: const Icon(Icons.keyboard_outlined),
-                    label: const Text('Enter pairing code manually'),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 12),
+              const Text(
+                'Activation starts automatically when the code is detected.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: muted, height: 1.5),
+              ),
+              if (scanError != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF4D6),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    scanError!,
+                    style: const TextStyle(
+                      color: Color(0xFF8A6100),
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: startCamera,
+                  child: const Text('Try camera again'),
+                ),
+              ],
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: enterCode,
+                icon: const Icon(Icons.keyboard_outlined),
+                label: const Text('Enter pairing code manually'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1955,12 +1990,11 @@ class KioskHome extends StatelessWidget {
   const KioskHome({super.key, required this.ctx});
   @override
   Widget build(BuildContext context) => PopScope(
-        canPop: false,
-        child: (ctx.station ?? 'service') == 'service'
-            ? const WaiterDemo()
-            : StationBoard(
-                station: ctx.station == 'bar' ? 'Barkeeper' : 'Kitchen'),
-      );
+    canPop: false,
+    child: (ctx.station ?? 'service') == 'service'
+        ? const WaiterDemo()
+        : StationBoard(station: ctx.station == 'bar' ? 'Barkeeper' : 'Kitchen'),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -2103,8 +2137,8 @@ class SupabaseSync implements RestaurantSync {
       final d = k == keys.length - 1
           ? left
           : (gross == 0
-              ? 0
-              : (discountCents * bySession[keys[k]]! / gross).round());
+                ? 0
+                : (discountCents * bySession[keys[k]]! / gross).round());
       discountBy[keys[k]] = d.clamp(0, left);
       left -= discountBy[keys[k]]!;
     }
@@ -2115,8 +2149,9 @@ class SupabaseSync implements RestaurantSync {
     final rows = [
       for (final e in bySession.entries)
         () {
-          final tax =
-              subtotal == 0 ? 0 : (taxCents * e.value / subtotal).round();
+          final tax = subtotal == 0
+              ? 0
+              : (taxCents * e.value / subtotal).round();
           return {
             'session_id': e.key,
             'restaurant_id': restaurantId,
@@ -2186,7 +2221,8 @@ class SupabaseSync implements RestaurantSync {
         (i) =>
             i['cancelled'] != true &&
             (i['paid_quantity'] as int) < (i['quantity'] as int),
-      )) return;
+      ))
+        return;
       await supa
           .from('table_sessions')
           .update({'closed_at': _now})
@@ -2226,7 +2262,8 @@ Future<void> restoreActiveSessions(String rid) => refreshService(rid);
 
 /// Builds an order line from a saved session_items row.
 OrderLine lineFromRow(Map<String, dynamic> i, String sessionId) {
-  final dish = dishes
+  final dish =
+      dishes
           .where((d) => d.id != null && d.id == i['menu_item_id'])
           .firstOrNull ??
       Dish(
@@ -2243,16 +2280,16 @@ OrderLine lineFromRow(Map<String, dynamic> i, String sessionId) {
       Map<String, dynamic>.from(c as Map),
   ];
   return OrderLine(
-    dish,
-    i['quantity'] as int,
-    size: (i['size'] as String?) ?? '',
-    spice: (i['options'] as String?) ?? '',
-    status: i['status'] as String,
-    note: (i['note'] as String?) ?? '',
-    allergy: i['allergy'] == true,
-    unitPrice: i['unit_price_cents'] as int,
-    choices: choices,
-  )
+      dish,
+      i['quantity'] as int,
+      size: (i['size'] as String?) ?? '',
+      spice: (i['options'] as String?) ?? '',
+      status: i['status'] as String,
+      note: (i['note'] as String?) ?? '',
+      allergy: i['allergy'] == true,
+      unitPrice: i['unit_price_cents'] as int,
+      choices: choices,
+    )
     ..paid = i['paid_quantity'] as int
     ..dbId = i['id'] as String
     ..sessionId = sessionId;
@@ -2387,8 +2424,8 @@ Future<void> refreshService(String rid) async {
       final next = st.every((x) => x == 'Ready' || x == 'Served')
           ? 'Ready'
           : st.any((x) => x == 'Preparing' || x == 'Ready')
-              ? 'Preparing'
-              : 'New';
+          ? 'Preparing'
+          : 'New';
       if (k.state != next) {
         k.state = next;
         k.readyAt = next == 'Ready' ? (k.readyAt ?? DateTime.now()) : null;
@@ -2417,9 +2454,9 @@ class _DailyAppUpdateState extends State<DailyAppUpdate> {
       kDebugMode && kIsWeb && Uri.base.queryParameters['previewUpdate'] == '1';
   bool _checking =
       (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) ||
-          (kDebugMode &&
-              kIsWeb &&
-              Uri.base.queryParameters['previewUpdate'] == '1');
+      (kDebugMode &&
+          kIsWeb &&
+          Uri.base.queryParameters['previewUpdate'] == '1');
 
   @override
   void initState() {
