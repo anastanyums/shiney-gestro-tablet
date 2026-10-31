@@ -6,6 +6,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'waiter_demo.dart';
 import 'toast.dart';
 
+// A partially sold-out product remains orderable, but must also be discoverable
+// in Sold out so staff can restore the affected portion without hunting for it.
+bool hasSoldOutKitchenVariants(Dish dish) => dish.kitchenVariations.any(
+      (group) => group.allOptions.any((option) => !option.available),
+    );
+
 // Commercial annotations stay on the order record, not the preparation ticket.
 String kitchenPreparationNote(String note) {
   return note
@@ -1427,7 +1433,7 @@ class _StationBoardState extends State<StationBoard> {
   Widget nav(List<StationTicket> all, int active) {
     final done = all.where((t) => t.state == 'Ready').length;
     final tablesN = seatedTables.length;
-    final sold = stationDishes.where(demoRestaurant.isSoldOut).length;
+    final sold = stationDishes.where((d) => demoRestaurant.isSoldOut(d) || hasSoldOutKitchenVariants(d)).length;
     Widget badge(int n, Color c, IconData icon) => Badge(
       isLabelVisible: n > 0,
       label: Text('$n'),
@@ -2121,15 +2127,21 @@ class _StationBoardState extends State<StationBoard> {
 
   Widget menuSection() {
     final all = stationDishes;
-    final sold = all.where(demoRestaurant.isSoldOut).length;
+    bool needsRestock(Dish d) =>
+        demoRestaurant.isSoldOut(d) || hasSoldOutKitchenVariants(d);
+    final sold = all.where(needsRestock).length;
+    final available = all.where((d) => !demoRestaurant.isSoldOut(d)).length;
     final q = menuQuery.trim().toLowerCase();
     final list = all
         .where(
           (d) =>
               (menuFilter == 'All' ||
-                  (menuFilter == 'Sold out') == demoRestaurant.isSoldOut(d)) &&
+                  (menuFilter == 'Sold out'
+                      ? needsRestock(d)
+                      : !demoRestaurant.isSoldOut(d))) &&
               (d.name.toLowerCase().contains(q) ||
-                  d.ticketName.toLowerCase().contains(q)),
+                  d.ticketName.toLowerCase().contains(q) ||
+                  d.kitchenVariations.any((g) => g.allOptions.any((o) => o.name.toLowerCase().contains(q)))),
         )
         .toList();
     return page([
@@ -2163,7 +2175,7 @@ class _StationBoardState extends State<StationBoard> {
           filterChip('All', all.length, menuFilter, (v) => menuFilter = v),
           filterChip(
             'Available',
-            all.length - sold,
+            available,
             menuFilter,
             (v) => menuFilter = v,
           ),
@@ -2175,7 +2187,7 @@ class _StationBoardState extends State<StationBoard> {
         child: Text(
           sold == 0
               ? 'Everything is available. Tap Sold out when an item runs out.'
-              : '$sold sold out · Waiters cannot add these to orders until you mark them available',
+              : '$sold products have sold-out items or variants. Restore the highlighted variants below.',
           style: TextStyle(
             color: sold == 0 ? const Color(0xFF8A8FA3) : Colors.red.shade700,
             fontSize: 13,
@@ -2189,7 +2201,11 @@ class _StationBoardState extends State<StationBoard> {
           'Try another search or filter.',
         )
       else
-        responsiveWrap(list.map(menuCard).toList(), minWidth: 300),
+        responsiveWrap(
+          list.map(menuCard).toList(),
+          minWidth: 280,
+          sessionColumns: true,
+        ),
     ]);
   }
 
@@ -2227,7 +2243,7 @@ class _StationBoardState extends State<StationBoard> {
                   children: [
                     Text(
                       d.ticketName,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 16,
@@ -2272,13 +2288,13 @@ class _StationBoardState extends State<StationBoard> {
                         borderRadius: BorderRadius.circular(9),
                         child: InkWell(
                           borderRadius: BorderRadius.circular(9),
-                          onTap: out == soldOption
-                              ? null
-                              : () => toggleSoldOut(d),
+                          onTap:
+                              out == soldOption ? null : () => toggleSoldOut(d),
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            child: Wrap(
+                              alignment: WrapAlignment.center,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
                                 Icon(
                                   soldOption
@@ -2310,6 +2326,51 @@ class _StationBoardState extends State<StationBoard> {
             ),
           ),
           variantRow(d),
+          for (final g in d.kitchenVariations)
+            for (final o in g.allOptions.where((o) => !o.available))
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3D6),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFE8CB82)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${g.name} · SOLD OUT',
+                        style: const TextStyle(
+                            fontSize: 12, color: Color(0xFF805800)),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(o.name,
+                          style: const TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      if (demoRestaurant.soldOut.contains(d.name))
+                        const Text('Make the whole product available first.')
+                      else
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: green,
+                              minimumSize: const Size(0, 48),
+                            ),
+                            onPressed: () => toggleVariant(d, o),
+                            icon: const Icon(Icons.check_circle_outline,
+                                size: 18),
+                            label: const Text('Make available'),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
         ],
       ),
     );
@@ -2349,11 +2410,14 @@ class _StationBoardState extends State<StationBoard> {
             borderRadius: BorderRadius.circular(14),
           ),
           onTap: () => openVariants(d),
-          child: SizedBox(
-            height: 44,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   const Icon(Icons.tune_rounded, size: 18, color: green),
                   const SizedBox(width: 8),
@@ -2364,7 +2428,6 @@ class _StationBoardState extends State<StationBoard> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const Spacer(),
                   if (outN > 0)
                     Container(
                       padding: const EdgeInsets.symmetric(
