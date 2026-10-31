@@ -2406,14 +2406,8 @@ class _StationBoardState extends State<StationBoard> {
 
   // Tap a variant to mark it sold out for everyone (waiters, online ordering, Mission Control);
   // tap again to bring it back. When the whole dish is sold out, all its variants show as sold out.
-  void openVariants(Dish d) => showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-    ),
-    builder: (ctx) => StatefulBuilder(
+  void openVariants(Dish d) {
+    Widget content(BuildContext ctx) => StatefulBuilder(
       builder: (ctx, set) {
         final dishOut = demoRestaurant.soldOut.contains(d.name);
         return SafeArea(
@@ -2461,56 +2455,66 @@ class _StationBoardState extends State<StationBoard> {
                     ),
                   ),
                   const SizedBox(height: 16),
-          for (final g in d.kitchenVariations)
-            for (final o in g.allOptions.where((o) => !o.available))
-              Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFF3D6),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFFE8CB82)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${g.name} · SOLD OUT',
-                        style: const TextStyle(
-                            fontSize: 12, color: Color(0xFF805800)),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(o.name,
-                          style: const TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.w700)),
-                      const SizedBox(height: 8),
-                      if (demoRestaurant.soldOut.contains(d.name))
-                        const Text('Make the whole product available first.')
-                      else
-                        SizedBox(
+                  for (final g in d.kitchenVariations)
+                    for (final o in g.allOptions.where((o) => !o.available))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Container(
                           width: double.infinity,
-                          child: FilledButton.icon(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: green,
-                              minimumSize: const Size(0, 48),
-                            ),
-                            onPressed: () {
-                              toggleVariant(d, o, () {
-                                if (ctx.mounted) set(() {});
-                              });
-                              set(() {});
-                            },
-                            icon: const Icon(Icons.check_circle_outline,
-                                size: 18),
-                            label: const Text('Make available'),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF3D6),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFE8CB82)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${g.name} · SOLD OUT',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF805800),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                o.name,
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              if (demoRestaurant.soldOut.contains(d.name))
+                                const Text(
+                                  'Make the whole product available first.',
+                                )
+                              else
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FilledButton.icon(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: green,
+                                      minimumSize: const Size(0, 48),
+                                    ),
+                                    onPressed: () {
+                                      toggleVariant(d, o, () {
+                                        if (ctx.mounted) set(() {});
+                                      });
+                                      set(() {});
+                                    },
+                                    icon: const Icon(
+                                      Icons.check_circle_outline,
+                                      size: 18,
+                                    ),
+                                    label: const Text('Make available'),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
-                    ],
-                  ),
-                ),
-              ),
+                      ),
                   const SizedBox(height: 16),
                   for (final g in d.kitchenVariations) ...[
                     Text(
@@ -2544,8 +2548,33 @@ class _StationBoardState extends State<StationBoard> {
           ),
         );
       },
-    ),
-  );
+    );
+
+    if (MediaQuery.sizeOf(context).width >= 600) {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => Dialog(
+          insetPadding: const EdgeInsets.all(24),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: content(ctx),
+          ),
+        ),
+      );
+    } else {
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: content,
+      );
+    }
+  }
 
   Widget variantChip(
     Dish d,
