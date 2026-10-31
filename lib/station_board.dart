@@ -1751,8 +1751,6 @@ class _StationBoardState extends State<StationBoard> {
     final time = t.started!.toLocal();
     final seatedAt =
         '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    final ordered = t.items.fold<int>(0, (n, x) => n + x.totalFor(x.quantity));
-    final open = t.balance;
     void details() => showDialog<void>(
         context: context,
         builder: (ctx) => Dialog(
@@ -1868,46 +1866,6 @@ class _StationBoardState extends State<StationBoard> {
                                           state == 'Ready' ? green : muted),
                                 ]),
                               ]))),
-            const Divider(height: 1, color: Color(0xFFE1E7E3)),
-            Container(
-                color: const Color(0xFFFAFCFB),
-                padding: const EdgeInsets.all(18),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: LinearProgressIndicator(
-                              value: ordered > 0
-                                  ? ((ordered - open) / ordered).clamp(0.0, 1.0)
-                                  : 0,
-                              minHeight: 6,
-                              backgroundColor: const Color(0xFFEDF2EF),
-                              color: green)),
-                      const SizedBox(height: 12),
-                      Text('Ordered ${money(ordered)}',
-                          style: const TextStyle(fontSize: 13, color: muted)),
-                      const SizedBox(height: 7),
-                      Row(children: [
-                        const Text('Open',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 16)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                            child: Text(money(open),
-                                textAlign: TextAlign.end,
-                                style: const TextStyle(
-                                    color: green,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 17)))
-                      ]),
-                      const SizedBox(height: 14),
-                      const Text('View details →',
-                          style: TextStyle(
-                              color: green,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700)),
-                    ])),
           ])),
     );
   }
