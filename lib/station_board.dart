@@ -1590,114 +1590,123 @@ class _StationBoardState extends State<StationBoard> {
       );
     final waiting =
         done.where((t) => !t.items.every((x) => x.status == 'Served')).length;
-    return page([
-      Text(
-        '${done.length} finished · $waiting waiting for pickup',
-        style: const TextStyle(color: Color(0xFF8A8FA3), fontSize: 13),
-      ),
-      const SizedBox(height: 14),
-      responsiveWrap(
-        done.map((t) {
-          final at = t.readyAt;
-          final served = t.items.every((x) => x.status == 'Served');
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color:
-                    served ? const Color(0xFFECEEF2) : const Color(0xFFF0D29A),
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(
+          '${done.length} finished · $waiting waiting for pickup',
+          style: const TextStyle(color: Color(0xFF8A8FA3), fontSize: 13),
+        ),
+        const SizedBox(height: 14),
+        responsiveWrap(
+          done.map((t) {
+            final at = t.readyAt;
+            final served = t.items.every((x) => x.status == 'Served');
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: served
+                      ? const Color(0xFFECEEF2)
+                      : const Color(0xFFF0D29A),
+                ),
               ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: pale,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Text(
+                          t.table,
+                          style: const TextStyle(
+                            color: green,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: pale,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: Text(
-                        t.table,
+                      Text(
+                        '#${t.number}',
                         style: const TextStyle(
-                          color: green,
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      '#${t.number}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
+                      statusPill(
+                        served ? 'Served' : 'Waiting for pickup',
+                        served,
                       ),
-                    ),
-                    const Spacer(),
-                    statusPill(
-                      served ? 'Served' : 'Waiting for pickup',
-                      served,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                ...t.items.map(
-                  (x) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 28,
-                          child: Text(
-                            '${x.quantity}×',
-                            style: const TextStyle(fontWeight: FontWeight.w700),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ...t.items.map(
+                    (x) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 28,
+                            child: Text(
+                              '${x.quantity}×',
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700),
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            x.dish.ticketName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Expanded(
+                            child: Text(
+                              x.dish.ticketName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.schedule,
-                      size: 14,
-                      color: Color(0xFF8A8FA3),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      at == null
-                          ? 'Ready'
-                          : 'Ready at ${two(at.hour)}:${two(at.minute)} · ${DateTime.now().difference(at).inMinutes} min ago',
-                      style: const TextStyle(
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.schedule,
+                        size: 14,
                         color: Color(0xFF8A8FA3),
-                        fontSize: 12,
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    ]);
+                      const SizedBox(width: 4),
+                      Flexible(
+                          child: Text(
+                        at == null
+                            ? 'Ready'
+                            : 'Ready at ${two(at.hour)}:${two(at.minute)} · ${DateTime.now().difference(at).inMinutes} min ago',
+                        style: const TextStyle(
+                          color: Color(0xFF8A8FA3),
+                          fontSize: 12,
+                        ),
+                      )),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          minWidth: 300,
+          sessionColumns: true,
+        ),
+      ],
+    );
   }
 
   // Session overview includes every occupied dining table, regardless of workstation.
